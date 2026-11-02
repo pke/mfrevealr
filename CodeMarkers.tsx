@@ -95,7 +95,6 @@ function CodeMarker({
         {
           width: base,
           height: base,
-          borderRadius: base / 5,
           transform: [{translateX: x}, {translateY: y}, {scale}],
         },
       ]}>
@@ -174,13 +173,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     top: 0,
-    padding: 4,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    shadowOffset: {width: 0, height: 3},
-    elevation: 6,
   },
   image: {
     flex: 1,
