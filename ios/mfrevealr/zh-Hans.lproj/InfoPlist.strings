@@ -1,0 +1,2 @@
+/* Shown when the app asks for camera access. */
+"NSCameraUsageDescription" = "扫描 Lego® 人仔包装盒上的代码。";

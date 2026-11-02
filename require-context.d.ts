@@ -1,0 +1,13 @@
+// Metro's require.context (enabled via unstable_allowRequireContext).
+declare namespace NodeJS {
+  interface Require {
+    context(
+      directory: string,
+      useSubdirectories?: boolean,
+      regExp?: RegExp,
+    ): {
+      keys(): string[];
+      (id: string): any;
+    };
+  }
+}

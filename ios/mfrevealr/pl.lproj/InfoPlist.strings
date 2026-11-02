@@ -1,0 +1,2 @@
+/* Shown when the app asks for camera access. */
+"NSCameraUsageDescription" = "Skanuj kody z opakowań minifigurek Lego®.";

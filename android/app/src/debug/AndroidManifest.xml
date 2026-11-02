@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Only debug builds talk to Metro; release builds bundle all JS and assets.
+         Cleartext traffic to Metro is enabled by the React Native Gradle Plugin via
+         the usesCleartextTraffic manifest placeholder for debuggable variants. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>
