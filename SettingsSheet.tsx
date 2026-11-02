@@ -1,0 +1,403 @@
+import React from 'react';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
+import type {UpdateResult} from './catalogStore';
+import {LANGUAGE_NAMES, LANGUAGES, LanguagePreference} from './languages';
+import type {Layout, Settings} from './settings';
+import {Insets, Sheet} from './Sheet';
+import {ThemePreference, usePalette} from './theme';
+
+const THEMES = [
+  {value: 'system', label: 'settings.themeSystem'},
+  {value: 'light', label: 'settings.light'},
+  {value: 'dark', label: 'settings.dark'},
+] as const satisfies readonly {value: ThemePreference; label: string}[];
+
+const LAYOUTS: readonly Layout[] = ['card', 'split', 'strip'];
+
+/** The catalog revision, yyyyMMddHHmm in UTC, as a date in `language`. */
+function revisionDate(revision: number, language: string) {
+  const digits = String(revision);
+  const date = new Date(
+    Date.UTC(
+      Number(digits.slice(0, 4)),
+      Number(digits.slice(4, 6)) - 1,
+      Number(digits.slice(6, 8)),
+    ),
+  );
+  try {
+    return date.toLocaleDateString(language, {
+      dateStyle: 'medium',
+      timeZone: 'UTC',
+    });
+  } catch {
+    return date.toISOString().slice(0, 10);
+  }
+}
+
+/** A tiny sketch of each layout: camera in grey, panels in white. */
+function LayoutPreview({layout}: {layout: Layout}) {
+  return (
+    <View style={styles.preview}>
+      <View style={styles.previewFrame} />
+      {layout === 'card' && <View style={styles.previewCard} />}
+      {layout === 'split' && (
+        <View style={styles.previewSplit}>
+          {Array.from({length: 8}, (_, index) => (
+            <View key={index} style={styles.previewTile} />
+          ))}
+        </View>
+      )}
+      {layout === 'strip' && (
+        <View style={styles.previewStrip}>
+          {Array.from({length: 4}, (_, index) => (
+            <View key={index} style={styles.previewThumb} />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+export function SettingsSheet({
+  visible,
+  insets,
+  settings,
+  canReset,
+  catalogRevision,
+  onChange,
+  onCheckCatalog,
+  onReset,
+  onClose,
+}: {
+  visible: boolean;
+  insets: Insets;
+  settings: Settings;
+  canReset: boolean;
+  catalogRevision: number;
+  onChange: (change: Partial<Settings>) => void;
+  onCheckCatalog: () => Promise<UpdateResult>;
+  onReset: () => void;
+  onClose: () => void;
+}) {
+  const palette = usePalette();
+  const {t, i18n} = useTranslation();
+  const [catalogStatus, setCatalogStatus] = React.useState<
+    'checking' | UpdateResult
+  >();
+  const checkCatalog = () => {
+    setCatalogStatus('checking');
+    onCheckCatalog().then(setCatalogStatus);
+  };
+  const languages: {value: LanguagePreference; label: string}[] = [
+    {value: 'system', label: t('settings.languageSystem')},
+    ...LANGUAGES.map(language => ({
+      value: language,
+      label: LANGUAGE_NAMES[language],
+    })),
+  ];
+  return (
+    <Sheet
+      visible={visible}
+      insets={insets}
+      title={t('settings.title')}
+      onClose={onClose}>
+      <Text style={[styles.section, {color: palette.secondary}]}>
+        {t('settings.appearance')}
+      </Text>
+      <View
+        accessibilityRole="radiogroup"
+        style={[styles.segments, {backgroundColor: palette.track}]}>
+        {THEMES.map(({value, label}) => {
+          const selected = settings.theme === value;
+          return (
+            <Pressable
+              key={value}
+              onPress={() => onChange({theme: value})}
+              accessibilityRole="radio"
+              accessibilityState={{checked: selected}}
+              style={[
+                styles.segment,
+                selected && {
+                  backgroundColor: palette.surface,
+                  borderColor: palette.accent,
+                },
+              ]}>
+              <Text
+                style={[
+                  styles.segmentText,
+                  {color: palette.text},
+                  selected && styles.bold,
+                ]}>
+                {t(label)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <Text style={[styles.section, {color: palette.secondary}]}>
+        {t('settings.language')}
+      </Text>
+      <View accessibilityRole="radiogroup" style={styles.chips}>
+        {languages.map(({value, label}) => {
+          const selected = settings.language === value;
+          return (
+            <Pressable
+              key={value}
+              onPress={() => onChange({language: value})}
+              accessibilityRole="radio"
+              accessibilityState={{checked: selected}}
+              accessibilityLanguage={value === 'system' ? undefined : value}
+              style={[
+                styles.chip,
+                {borderColor: selected ? palette.accent : palette.track},
+              ]}>
+              <Text
+                style={[
+                  styles.segmentText,
+                  {color: palette.text},
+                  selected && styles.bold,
+                ]}>
+                {label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <Text style={[styles.section, {color: palette.secondary}]}>
+        {t('settings.layout')}
+      </Text>
+      <View accessibilityRole="radiogroup">
+        {LAYOUTS.map(value => {
+          const label = t(`layouts.${value}.label`);
+          const description = t(`layouts.${value}.description`);
+          const selected = settings.layout === value;
+          return (
+            <Pressable
+              key={value}
+              onPress={() => onChange({layout: value})}
+              accessibilityRole="radio"
+              accessibilityState={{checked: selected}}
+              accessibilityLabel={`${label}. ${description}`}
+              style={[
+                styles.option,
+                {borderColor: selected ? palette.accent : palette.track},
+              ]}>
+              <LayoutPreview layout={value} />
+              <View style={styles.optionText}>
+                <Text style={[styles.optionLabel, {color: palette.text}]}>
+                  {label}
+                </Text>
+                <Text
+                  style={[
+                    styles.optionDescription,
+                    {color: palette.secondary},
+                  ]}>
+                  {description}
+                </Text>
+              </View>
+              {selected && (
+                <Text style={[styles.check, {color: palette.accent}]}>✓</Text>
+              )}
+            </Pressable>
+          );
+        })}
+      </View>
+      <Text style={[styles.section, {color: palette.secondary}]}>
+        {t('catalog.title')}
+      </Text>
+      <View style={styles.catalog}>
+        <Text style={[styles.catalogText, {color: palette.text}]}>
+          {t('catalog.version', {
+            date: revisionDate(catalogRevision, i18n.language),
+          })}
+        </Text>
+        <Pressable
+          onPress={checkCatalog}
+          disabled={catalogStatus === 'checking'}
+          accessibilityRole="button"
+          accessibilityState={{busy: catalogStatus === 'checking'}}
+          hitSlop={8}>
+          <Text style={[styles.catalogButton, {color: palette.accent}]}>
+            {t('catalog.check')}
+          </Text>
+        </Pressable>
+      </View>
+      {catalogStatus && (
+        <Text
+          accessibilityLiveRegion="polite"
+          style={[styles.catalogStatus, {color: palette.secondary}]}>
+          {t(`catalog.${catalogStatus}`)}
+        </Text>
+      )}
+      {canReset && (
+        <Pressable
+          onPress={onReset}
+          accessibilityRole="button"
+          style={styles.reset}>
+          <Text style={[styles.link, {color: palette.secondary}]}>
+            {t('reset.button')}
+          </Text>
+        </Pressable>
+      )}
+    </Sheet>
+  );
+}
+
+const PREVIEW_CAMERA = '#48484A';
+
+const styles = StyleSheet.create({
+  section: {
+    fontSize: 13,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  segments: {
+    flexDirection: 'row',
+    borderRadius: 10,
+    padding: 2,
+    marginBottom: 16,
+  },
+  segment: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  segmentText: {
+    fontSize: 15,
+  },
+  bold: {
+    fontWeight: '700',
+  },
+  catalog: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  catalogText: {
+    flexShrink: 1,
+    fontSize: 15,
+  },
+  catalogButton: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  catalogStatus: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  chip: {
+    borderWidth: 2,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderRadius: 14,
+    padding: 10,
+    marginBottom: 8,
+  },
+  optionText: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  optionLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  optionDescription: {
+    fontSize: 14,
+    marginTop: 2,
+  },
+  check: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginHorizontal: 6,
+  },
+  preview: {
+    width: 40,
+    height: 64,
+    borderRadius: 8,
+    backgroundColor: PREVIEW_CAMERA,
+    overflow: 'hidden',
+    alignItems: 'center',
+  },
+  previewFrame: {
+    marginTop: 12,
+    width: 16,
+    height: 12,
+    borderWidth: 1.5,
+    borderColor: '#fff',
+    borderRadius: 2,
+  },
+  previewCard: {
+    position: 'absolute',
+    left: 4,
+    right: 4,
+    bottom: 4,
+    height: 24,
+    borderRadius: 4,
+    backgroundColor: '#fff',
+  },
+  previewSplit: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 30,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 3,
+    padding: 4,
+    borderTopLeftRadius: 6,
+    borderTopRightRadius: 6,
+    backgroundColor: '#fff',
+  },
+  previewTile: {
+    width: 5,
+    height: 8,
+    borderRadius: 1.5,
+    backgroundColor: PREVIEW_CAMERA,
+  },
+  previewStrip: {
+    position: 'absolute',
+    left: 4,
+    right: 4,
+    bottom: 4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 2,
+    borderRadius: 4,
+    backgroundColor: '#fff',
+  },
+  previewThumb: {
+    width: 6,
+    height: 6,
+    borderRadius: 1.5,
+    backgroundColor: PREVIEW_CAMERA,
+  },
+  reset: {
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  link: {
+    fontSize: 16,
+    textDecorationLine: 'underline',
+  },
+});
