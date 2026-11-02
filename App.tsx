@@ -5,6 +5,7 @@ import {
   Alert,
   Animated,
   AppState,
+  Easing,
   BackHandler,
   GestureResponderEvent,
   Image,
@@ -72,6 +73,9 @@ import {
   CheckBadge,
   CornerAt,
   heroImageRef,
+  heroSourceRef,
+  type InFlight,
+  NOTHING_IN_FLIGHT,
   HeroRegistry,
   heroTitleRef,
   Measurable,
@@ -208,7 +212,7 @@ function RevealCard({
   total,
   setName,
   heroes,
-  hiddenCode,
+  inFlight,
   onOpenSeries,
 }: {
   scan?: Scan;
@@ -219,7 +223,7 @@ function RevealCard({
   total: number;
   setName?: string;
   heroes: HeroRegistry;
-  hiddenCode?: string;
+  inFlight: InFlight;
   onOpenSeries: (code?: string) => void;
 }) {
   const palette = usePalette();
@@ -253,9 +257,10 @@ function RevealCard({
   }
 
   const status = scanStatus(t, scan, found, total);
-  const hidden = hiddenCode === scan.code;
+  const hidden = inFlight.codes.has(scan.code);
   return (
     <Animated.View
+      ref={heroSourceRef(heroes)}
       style={[
         styles.card,
         {
@@ -368,6 +373,15 @@ type Flight = {
   fromOpacity: number;
   opacity: number;
   title?: TitleFlight;
+  // The figure tapped, which pops up when it starts out small.
+  pop?: boolean;
+};
+
+/** Everything that moves between the card or strip and the open sheet. */
+type Transition = {
+  // The card or strip, which grows into the sheet.
+  source: Rect;
+  flights: Flight[];
 };
 
 const lerp = (value: Animated.Value, from: number, to: number) =>
@@ -474,16 +488,26 @@ function FlyingFigure({
   flight: Flight;
   progress: Animated.Value;
   sheetY: Animated.Value;
-  onReady: (flight: Flight) => void;
+  onReady: (code: string) => void;
 }) {
   const {from, to} = flight;
   const dx = from.x + from.width / 2 - (to.x + to.width / 2);
   const dy = from.y + from.height / 2 - (to.y + to.height / 2);
+  const start = from.width / to.width;
+  // Out of something smaller than its tile, like the strip, the figure pops
+  // up bigger on its way, so it reads as clearly as one off the card.
+  const scale =
+    flight.pop && start < 1
+      ? progress.interpolate({
+          inputRange: [0, POP_AT, 1],
+          outputRange: [start, POP_SCALE, 1],
+        })
+      : progress.interpolate({inputRange: [0, 1], outputRange: [start, 1]});
   return (
     <Animated.Image
       source={IMAGES[flight.code]}
       resizeMode="contain"
-      onLoad={() => onReady(flight)}
+      onLoad={() => onReady(flight.code)}
       style={[
         styles.flying,
         {
@@ -511,16 +535,149 @@ function FlyingFigure({
                 Animated.multiply(sheetY, progress),
               ),
             },
-            {
-              scale: progress.interpolate({
-                inputRange: [0, 1],
-                outputRange: [from.width / to.width, 1],
-              }),
-            },
+            {scale},
           ],
         },
       ]}
     />
+  );
+}
+
+// A figure flying out of the strip is largest this far into its flight,
+// this many times its tile's size.
+const POP_AT = 0.7;
+const POP_SCALE = 1.6;
+// How long the series sheet takes to grow.
+const OPEN_MS = 450;
+// The open sheet's top corners; the pieces of its background round off with
+// them.
+const SHEET_RADIUS = 24;
+// How far the sheet has grown when its background has fully covered the card
+// or strip.
+const COVERED_AT = 0.3;
+
+/**
+ * The sheet's background, growing out of the card or strip it opens from:
+ * at progress 0 it covers `source`, at 1 the sheet. Only transforms can run
+ * on the native driver, so it is three pieces: rounded top and bottom edges
+ * that move and stretch sideways, and a body between them that also stretches
+ * up and down, so the corners stay round instead of squashing.
+ */
+function GrowingSheet({
+  source,
+  sheet,
+  progress,
+  sheetY,
+  shown,
+  color,
+}: {
+  source: Rect;
+  sheet: Rect;
+  progress: Animated.Value;
+  sheetY: Animated.Value;
+  shown: Animated.Value;
+  color: string;
+}) {
+  const radius = SHEET_RADIUS;
+  const follow = Animated.multiply(sheetY, progress);
+  const toSheet = (from: number, to = 0) =>
+    progress.interpolate({inputRange: [0, 1], outputRange: [from, to]});
+  // Moved by where its edge or middle is, plus how far the sheet is dragged.
+  const offset = (fromEdge: number, toEdge: number) =>
+    Animated.add(toSheet(fromEdge - toEdge), follow);
+  const translateX = toSheet(
+    source.x + source.width / 2 - (sheet.x + sheet.width / 2),
+  );
+  const scaleX = toSheet(source.width / sheet.width, 1);
+  // The body overlaps both edges by a point, so no seam shows.
+  const body = sheet.height - 2 * radius + 2;
+  const scaleY = toSheet(
+    Math.max(0.01, (source.height - 2 * radius + 2) / body),
+    1,
+  );
+  const edge = {
+    left: sheet.x,
+    width: sheet.width,
+    height: radius,
+    backgroundColor: color,
+  };
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        StyleSheet.absoluteFill,
+        {
+          // Faded in while it leaves the card or strip, so what is left on
+          // them dissolves instead of vanishing.
+          opacity: Animated.multiply(
+            shown,
+            progress.interpolate({
+              inputRange: [0, COVERED_AT],
+              outputRange: [0, 1],
+              extrapolate: 'clamp',
+            }),
+          ),
+        },
+      ]}>
+      <Animated.View
+        style={[
+          styles.growing,
+          edge,
+          {
+            top: sheet.y,
+            borderTopLeftRadius: radius,
+            borderTopRightRadius: radius,
+            transform: [
+              {translateX},
+              {translateY: offset(source.y, sheet.y)},
+              {scaleX},
+            ],
+          },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.growing,
+          edge,
+          {
+            top: sheet.y + radius - 1,
+            height: body,
+            transform: [
+              {translateX},
+              {
+                translateY: offset(
+                  source.y + source.height / 2,
+                  sheet.y + sheet.height / 2,
+                ),
+              },
+              {scaleX},
+              {scaleY},
+            ],
+          },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.growing,
+          edge,
+          {
+            top: sheet.y + sheet.height - radius,
+            borderBottomLeftRadius: radius,
+            borderBottomRightRadius: radius,
+            transform: [
+              {translateX},
+              {
+                translateY: offset(
+                  source.y + source.height,
+                  sheet.y + sheet.height,
+                ),
+              },
+              {scaleX},
+            ],
+          },
+        ]}
+      />
+    </Animated.View>
   );
 }
 
@@ -577,7 +734,7 @@ function Collection({
   heroCode?: string;
   heroes: HeroRegistry;
   insets: Insets;
-  onFlying: (flying: boolean) => void;
+  onFlying: (inFlight: InFlight) => void;
   onToggle: (code: string) => void;
   onReset: () => void;
   onClose: () => void;
@@ -610,166 +767,254 @@ function Collection({
         )
       : undefined;
   const [mounted, setMounted] = React.useState(false);
-  const [flight, setFlight] = React.useState<Flight>();
+  const [transition, setTransition] = React.useState<Transition>();
+  // Where the sheet grows out of; kept once it's open, as its background.
+  const [source, setSource] = React.useState<Rect>();
   const progress = React.useRef(new Animated.Value(0)).current;
   const scrollRef = React.useRef<ScrollViewInstance>(null);
+  const sheetRef = React.useRef<Measurable | null>(null);
   const tileRefs = React.useRef<
     Record<string, {image?: Measurable | null; title?: Measurable | null}>
   >({});
-  // How far the sheet sits below its open position: 0 open, sheetHeight hidden.
-  const sheetY = React.useRef(new Animated.Value(height)).current;
-  // The sheet fades away well before it has slid off, so the figure lands on a
-  // card you can see instead of disappearing behind the sheet.
+  // How far the sheet is dragged down from its open position.
+  const sheetY = React.useRef(new Animated.Value(0)).current;
+  // The sheet's contents fade away well before it is gone, so the figures
+  // land on a card or strip you can see.
   const fade = React.useRef(new Animated.Value(1)).current;
+  // The growing background shows once a transition runs, not while measuring.
+  const shown = React.useRef(new Animated.Value(0)).current;
   const scrollY = React.useRef(0);
+  const sheetRect = {x: 0, y: sheetTop, width, height: sheetHeight};
 
-  // Measures both ends of the flight; without a figure on the card the sheet
-  // just slides. `sheetOffset` is where the sheet sits while measuring, since
-  // the flight ends at the tile of the open sheet.
-  const prepareFlight = React.useCallback(
-    async (
-      scrollIntoView: boolean,
-      sheetOffset: number,
-    ): Promise<Flight | undefined> => {
-      if (!heroCode || !IMAGES[heroCode]) {
-        return undefined;
-      }
-      const parts = heroes.current[heroCode] ?? {};
-      const tileParts = tileRefs.current[heroCode] ?? {};
-      const [source, sourceTitle, image, name] = await Promise.all([
-        measure(parts.image ?? null),
-        measure(parts.title ?? null),
-        measure(tileParts.image ?? null),
-        measure(tileParts.title ?? null),
+  // Measures both ends of the transition: the card or strip the sheet grows
+  // out of, and each figure on it in sight with its tile. Tiles are taken as
+  // they sit in the open sheet, wherever the sheet is while measuring.
+  const prepareTransition = React.useCallback(
+    async (scrollIntoView: boolean): Promise<Transition> => {
+      const [container, sheet] = await Promise.all([
+        measure(heroes.source ?? null),
+        measure(sheetRef.current),
       ]);
-      if (!source || !image) {
-        return undefined;
+      // Without a card or strip to grow out of, the sheet rises from below.
+      const from = container ?? {x: 0, y: height, width, height: sheetHeight};
+      if (!sheet) {
+        return {source: from, flights: []};
       }
-      // Measured while the sheet is still off screen when opening.
-      let shift = -sheetOffset;
-      // Bring a tile below the fold into view before flying to it.
-      const overflow =
-        image.y + shift + image.height - (height - insets.bottom - 16);
+      let shift = sheetTop - sheet.y;
+      const measured = await Promise.all(
+        setIds
+          .filter(code => IMAGES[code] && heroes.current[code]?.image)
+          .map(async code => {
+            const parts = heroes.current[code] ?? {};
+            const tile = tileRefs.current[code] ?? {};
+            const hero = code === heroCode;
+            const [image, title, tileImage, tileTitle] = await Promise.all([
+              measure(parts.image ?? null),
+              hero ? measure(parts.title ?? null) : undefined,
+              measure(tile.image ?? null),
+              hero ? measure(tile.title ?? null) : undefined,
+            ]);
+            return {code, parts, hero, image, title, tileImage, tileTitle};
+          }),
+      );
+      // The figures in sight on the card or strip fly; the others fade in.
+      const inSight = (rect: Rect) =>
+        !container ||
+        (rect.x >= container.x - 1 &&
+          rect.x + rect.width <= container.x + container.width + 1);
+      const flying = measured.filter(
+        (figure): figure is typeof figure & {image: Rect; tileImage: Rect} =>
+          Boolean(figure.image && figure.tileImage && inSight(figure.image)),
+      );
+      // Bring the tapped figure's tile into view before flying to it.
+      const hero = flying.find(figure => figure.hero);
+      const overflow = hero
+        ? hero.tileImage.y +
+          shift +
+          hero.tileImage.height -
+          (height - insets.bottom - 16)
+        : 0;
       if (scrollIntoView && overflow > 0) {
         scrollRef.current?.scrollTo({y: overflow, animated: false});
         shift -= overflow;
       }
       const lift = (rect: Rect) => ({...rect, y: rect.y + shift});
-      const has = found.has(heroCode);
-      const from = containedRect(source, heroCode);
-      const text = getFigureTitle(heroCode) ?? '';
       return {
-        code: heroCode,
-        from,
-        to: containedRect(lift(image), heroCode),
-        fromOpacity: parts.imageOpacity ?? 1,
-        opacity: has ? 1 : 0.25,
-        title: name && {
-          text,
-          to: lift(name),
-          color: has ? palette.text : palette.secondary,
-          from: sourceTitle,
-          fromSize: parts.titleSize,
-        },
+        source: from,
+        flights: flying.map(figure => {
+          const has = found.has(figure.code);
+          return {
+            code: figure.code,
+            from: containedRect(figure.image, figure.code),
+            to: containedRect(lift(figure.tileImage), figure.code),
+            fromOpacity: figure.parts.imageOpacity ?? 1,
+            opacity: has ? 1 : 0.25,
+            pop: figure.hero,
+            title: figure.tileTitle && {
+              text: getFigureTitle(figure.code) ?? '',
+              to: lift(figure.tileTitle),
+              color: has ? palette.text : palette.secondary,
+              from: figure.title,
+              fromSize: figure.parts.titleSize,
+            },
+          };
+        }),
       };
     },
-    [heroCode, heroes, height, insets.bottom, found, palette],
+    [
+      heroCode,
+      heroes,
+      setIds,
+      width,
+      height,
+      sheetTop,
+      sheetHeight,
+      insets.bottom,
+      found,
+      palette,
+    ],
   );
 
-  // The flying copy takes over from the card or tile only once it is on
+  // The flying copies take over from the card or strip only once they are on
   // screen: a new image paints when it has loaded, and a native-driven
   // animation that is already running never reaches views that attach to its
-  // value later. Until then the original stays visible and nothing moves.
-  const [readyFlight, setReadyFlight] = React.useState<Flight>();
-  const flightReady = flight !== undefined && readyFlight === flight;
+  // value later. Until then the originals stay visible and nothing moves.
+  const [readyTransition, setReadyTransition] = React.useState<Transition>();
+  const transitionReady =
+    transition !== undefined && readyTransition === transition;
+  const loaded = React.useRef(new Set<string>());
+  const onFigureReady = React.useCallback(
+    (code: string) => {
+      loaded.current.add(code);
+      if (
+        transition &&
+        transition.flights.every(({code: flying}) => loaded.current.has(flying))
+      ) {
+        setReadyTransition(transition);
+      }
+    },
+    [transition],
+  );
   React.useEffect(() => {
-    onFlying(flightReady);
-  }, [flightReady, onFlying]);
+    onFlying(
+      transitionReady
+        ? {
+            codes: new Set(transition.flights.map(({code}) => code)),
+            title: transition.flights.find(({title}) => title?.from)?.code,
+          }
+        : NOTHING_IN_FLIGHT,
+    );
+  }, [transitionReady, transition, onFlying]);
   React.useEffect(() => {
-    if (!flight || readyFlight === flight) {
+    if (!transition || readyTransition === transition) {
+      return;
+    }
+    if (!transition.flights.length) {
+      setReadyTransition(transition);
       return;
     }
     // An image that never reports in must not hold the sheet back.
-    const timer = setTimeout(() => setReadyFlight(flight), 250);
+    const timer = setTimeout(() => setReadyTransition(transition), 250);
     return () => clearTimeout(timer);
-  }, [flight, readyFlight]);
+  }, [transition, readyTransition]);
+
+  // A transition whose figures are new to the screen starts from scratch.
+  const show = React.useCallback((next: Transition | undefined) => {
+    loaded.current = new Set();
+    setTransition(next);
+    if (next) {
+      setSource(next.source);
+    }
+  }, []);
 
   const [pendingRun, setPendingRun] = React.useState<{
     toValue: number;
-    flight?: Flight;
+    transition?: Transition;
     done: () => void;
     started?: boolean;
   }>();
   const run = React.useCallback(
-    (toValue: number, prepared: Flight | undefined, done: () => void) => {
-      setFlight(prepared);
-      setPendingRun({toValue, flight: prepared, done});
+    (toValue: number, prepared: Transition | undefined, done: () => void) => {
+      show(prepared);
+      setPendingRun({toValue, transition: prepared, done});
     },
-    [],
+    [show],
   );
 
   React.useEffect(() => {
     if (
       !pendingRun ||
       pendingRun.started ||
-      (pendingRun.flight && readyFlight !== pendingRun.flight)
+      (pendingRun.transition && readyTransition !== pendingRun.transition)
     ) {
       return;
     }
     pendingRun.started = true;
     const {toValue, done} = pendingRun;
-    const spring = {
-      useNativeDriver: true,
-      damping: 22,
-      stiffness: 200,
-      mass: 1,
-      overshootClamping: true,
-    };
-    Animated.spring(sheetY, {
-      ...spring,
-      toValue: toValue === 1 ? 0 : sheetHeight,
-    }).start();
+    shown.setValue(1);
+    // Opening grows out slow enough to follow; closing springs back quickly.
+    const move = (value: Animated.Value, to: number) =>
+      toValue === 1
+        ? Animated.timing(value, {
+            toValue: to,
+            duration: OPEN_MS,
+            easing: Easing.inOut(Easing.cubic),
+            useNativeDriver: true,
+          })
+        : Animated.spring(value, {
+            toValue: to,
+            useNativeDriver: true,
+            damping: 22,
+            stiffness: 200,
+            mass: 1,
+            overshootClamping: true,
+          });
+    // Closing shrinks the sheet from wherever it was dragged to.
+    if (toValue === 1) {
+      move(sheetY, 0).start();
+    }
     Animated.timing(fade, {
       toValue,
       duration: toValue === 1 ? 150 : 200,
       useNativeDriver: true,
     }).start();
-    Animated.spring(progress, {...spring, toValue}).start(({finished}) => {
+    move(progress, toValue).start(({finished}) => {
       if (finished) {
-        setFlight(undefined);
+        setTransition(undefined);
         done();
       }
     });
     // Each run starts once; the rest is read as it was when it was asked for.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingRun, readyFlight]);
+  }, [pendingRun, readyTransition]);
 
   // Swipe down to dismiss, from anywhere while the sheet is scrolled to the
-  // top. The sheet follows the finger and the figure heads back to the card.
-  const swipeFlight = React.useRef<Promise<Flight | undefined> | undefined>(
+  // top. The sheet follows the finger, shrinking back towards the card or
+  // strip as the figures head home.
+  const swipeTransition = React.useRef<Promise<Transition> | undefined>(
     undefined,
   );
   const swipe = React.useMemo(() => {
-    // How far to pull for the figure to travel all the way back to the card.
+    // How far to pull for the figures to travel all the way back.
     const distance = sheetHeight * 0.5;
     const snapBack = () => {
-      const pending = swipeFlight.current ?? Promise.resolve(undefined);
-      swipeFlight.current = undefined;
+      const pending = swipeTransition.current ?? Promise.resolve(undefined);
+      swipeTransition.current = undefined;
       pending.then(prepared => run(1, prepared, () => {}));
     };
     return PanResponder.create({
       onMoveShouldSetPanResponderCapture: (_, {dx, dy}) =>
         scrollY.current <= 0 && dy > 8 && dy > Math.abs(dx) * 1.5,
       onPanResponderGrant: () => {
-        // Measured before the first move, while the tile is still in place.
-        swipeFlight.current = prepareFlight(false, 0);
-        swipeFlight.current.then(setFlight);
+        // Measured before the first move, while the tiles are still in place.
+        swipeTransition.current = prepareTransition(false);
+        swipeTransition.current.then(show);
       },
       onPanResponderMove: (_, {dy}) => {
         const flown = Math.min(1, Math.max(0, dy) / distance);
         sheetY.setValue(Math.max(0, dy));
         progress.setValue(1 - flown);
-        // Gone by the time the figure is 60% of the way to the card.
+        // Gone by the time the figures are 60% of the way back.
         fade.setValue(Math.max(0, 1 - flown / 0.6));
       },
       onPanResponderRelease: (_, {dy, vy}) =>
@@ -777,46 +1022,56 @@ function Collection({
       onPanResponderTerminate: snapBack,
       onPanResponderTerminationRequest: () => false,
     });
-  }, [sheetY, progress, fade, sheetHeight, prepareFlight, run, onClose]);
+  }, [
+    sheetY,
+    progress,
+    fade,
+    sheetHeight,
+    prepareTransition,
+    run,
+    show,
+    onClose,
+  ]);
 
   React.useEffect(() => {
     if (visible && !mounted) {
       progress.setValue(0);
-      sheetY.setValue(sheetHeight);
+      sheetY.setValue(0);
       fade.setValue(1);
+      shown.setValue(0);
       setMounted(true);
     }
-  }, [visible, mounted, progress, sheetY, fade, sheetHeight]);
+  }, [visible, mounted, progress, sheetY, fade, shown]);
 
-  // Opening waits for the grid's first layout at its fitted size, so the target
-  // tile is measurable.
+  // Opening waits for the grid's first layout at its fitted size, so the
+  // tiles are measurable.
   const opened = React.useRef(false);
   const visibleRef = React.useRef(visible);
   visibleRef.current = visible;
   // Set from the moment the sheet starts closing until it is gone.
   const closing = React.useRef(false);
-  const flightRef = React.useRef(flight);
-  flightRef.current = flight;
+  const transitionRef = React.useRef(transition);
+  transitionRef.current = transition;
   const onGridLayout = React.useCallback(() => {
     if (!visible || opened.current) {
       return;
     }
     opened.current = true;
-    prepareFlight(true, sheetHeight).then(prepared => {
-      // Closed while measuring: the closing flight has taken over.
+    prepareTransition(true).then(prepared => {
+      // Closed while measuring: the closing transition has taken over.
       if (visibleRef.current) {
         run(1, prepared, () => {});
       }
     });
-  }, [visible, sheetHeight, prepareFlight, run]);
+  }, [visible, prepareTransition, run]);
 
   React.useEffect(() => {
     if (visible && closing.current) {
       // Reopened while still closing: turn around from where everything is,
-      // the figure heading back into its tile.
+      // the figures heading back into their tiles.
       closing.current = false;
       opened.current = true;
-      run(1, flightRef.current, () => {});
+      run(1, transitionRef.current, () => {});
       return;
     }
     if (visible || !mounted) {
@@ -831,10 +1086,10 @@ function Collection({
     }
     opened.current = false;
     closing.current = true;
-    // A swipe already has the figure on its way; keep flying from where the
-    // finger let go instead of measuring the dragged tile again.
-    const pending = swipeFlight.current ?? prepareFlight(false, 0);
-    swipeFlight.current = undefined;
+    // A swipe already has the figures on their way; keep flying from where
+    // the finger let go instead of measuring the dragged tiles again.
+    const pending = swipeTransition.current ?? prepareTransition(false);
+    swipeTransition.current = undefined;
     pending.then(prepared => {
       // Reopened while measuring: the sheet never started to close.
       if (!visibleRef.current) {
@@ -844,8 +1099,8 @@ function Collection({
         });
       }
     });
-    // Closing should only react to `visible`; the flight reads the latest
-    // values through prepareFlight.
+    // Closing should only react to `visible`; the transition reads the latest
+    // values through prepareTransition.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
@@ -867,6 +1122,12 @@ function Collection({
     return null;
   }
 
+  const flights = transitionReady ? transition.flights : [];
+  const flyingCodes = new Set(flights.map(({code}) => code));
+  const titled = flights.find(({title}) => title);
+  // The contents ride on the growing background's top edge and fade in as
+  // it nears the top, or follow the finger while dragged.
+  const rise = (source?.y ?? height) - sheetTop;
   return (
     <View
       style={StyleSheet.absoluteFill}
@@ -880,27 +1141,53 @@ function Collection({
           style={[
             sheetStyles.backdrop,
             {
-              opacity: Animated.multiply(
-                sheetY.interpolate({
-                  inputRange: [0, sheetHeight],
-                  outputRange: [1, 0],
-                  extrapolate: 'clamp',
-                }),
-                fade,
-              ),
+              opacity: progress.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 1],
+                extrapolate: 'clamp',
+              }),
             },
           ]}
         />
       </Pressable>
+      {source && (
+        <GrowingSheet
+          source={source}
+          sheet={sheetRect}
+          progress={progress}
+          sheetY={sheetY}
+          shown={shown}
+          color={palette.surface}
+        />
+      )}
       <Animated.View
         {...swipe.panHandlers}
+        ref={(node: Measurable | null) => {
+          sheetRef.current = node;
+        }}
         style={[
           sheetStyles.sheet,
           {
             top: sheetTop,
-            backgroundColor: palette.surface,
-            opacity: fade,
-            transform: [{translateY: sheetY}],
+            opacity: Animated.multiply(
+              fade,
+              progress.interpolate({
+                inputRange: [0.35, 1],
+                outputRange: [0, 1],
+                extrapolate: 'clamp',
+              }),
+            ),
+            transform: [
+              {
+                translateY: Animated.add(
+                  Animated.multiply(sheetY, progress),
+                  progress.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [rise, 0],
+                  }),
+                ),
+              },
+            ],
           },
         ]}>
         <ScrollView
@@ -955,7 +1242,7 @@ function Collection({
               {setIds.map(item => {
                 const has = found.has(item);
                 const title = getFigureTitle(item);
-                const inFlight = flightReady && flight?.code === item;
+                const inFlight = flyingCodes.has(item);
                 return (
                   <Pressable
                     key={item}
@@ -998,7 +1285,7 @@ function Collection({
                           height: NAME_HEIGHT * PixelRatio.getFontScale(),
                           color: has ? palette.text : palette.secondary,
                         },
-                        inFlight && flight?.title && styles.hidden,
+                        titled?.code === item && styles.hidden,
                       ]}>
                       {title}
                     </Text>
@@ -1019,18 +1306,19 @@ function Collection({
           </Pressable>
         </ScrollView>
       </Animated.View>
-      {flight && (
+      {transition?.flights.map(flight => (
         <FlyingFigure
+          key={flight.code}
           flight={flight}
           progress={progress}
           sheetY={sheetY}
-          onReady={setReadyFlight}
+          onReady={onFigureReady}
         />
-      )}
-      {flightReady && flight?.title && (
+      ))}
+      {titled?.title && (
         <FlyingTitle
-          title={flight.title}
-          figure={flight.from}
+          title={titled.title}
+          figure={titled.from}
           progress={progress}
           sheetY={sheetY}
         />
@@ -1169,12 +1457,12 @@ function Scanner({
     scene && {code: scene.scan, isNew: true},
   );
   const [seriesOpen, setSeriesOpen] = React.useState(false);
-  const [heroFlying, setHeroFlying] = React.useState(false);
+  const [inFlight, setInFlight] = React.useState(NOTHING_IN_FLIGHT);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [torch, setTorch] = React.useState(false);
   // Where each figure sits in the current layout, and the one the series
   // sheet flies to and from: the card's figure or the tapped thumbnail.
-  const heroes = React.useRef<HeroRegistry['current']>({});
+  const [heroes] = React.useState<HeroRegistry>(() => ({current: {}}));
   const [heroCode, setHeroCode] = React.useState<string>();
   React.useEffect(() => {
     if (!scene?.open) {
@@ -1408,7 +1696,6 @@ function Scanner({
     setHeroCode(code ?? lastScan?.code);
     setSeriesOpen(true);
   };
-  const hiddenCode = heroFlying ? heroCode : undefined;
   const layout: Layout = scene?.layout ?? settings.layout;
 
   // Switching layouts moves the camera, which restarts its session; that only
@@ -1522,7 +1809,7 @@ function Scanner({
                 total={setIds.length}
                 setName={setName}
                 heroes={heroes}
-                hiddenCode={hiddenCode}
+                inFlight={inFlight}
                 onOpenSeries={openSeries}
               />
             ) : (
@@ -1531,7 +1818,7 @@ function Scanner({
                 setIds={setIds}
                 found={figuresInSet}
                 heroes={heroes}
-                hiddenCode={hiddenCode}
+                inFlight={inFlight}
                 onOpenSeries={openSeries}
               />
             )}
@@ -1551,7 +1838,7 @@ function Scanner({
         heroCode={heroCode}
         heroes={heroes}
         insets={insets}
-        onFlying={setHeroFlying}
+        onFlying={setInFlight}
         onToggle={toggleFigure}
         onReset={confirmReset}
         onClose={closeSeries}
@@ -1653,6 +1940,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  growing: {
+    position: 'absolute',
   },
   corner: {
     position: 'absolute',

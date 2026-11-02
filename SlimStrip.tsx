@@ -13,6 +13,8 @@ import IMAGES from './figureImages';
 import {getFigureTitle} from './resolveCode';
 import {
   heroImageRef,
+  heroSourceRef,
+  type InFlight,
   HeroRegistry,
   heroTitleRef,
   Scan,
@@ -36,14 +38,14 @@ export function SlimStrip({
   setIds,
   found,
   heroes,
-  hiddenCode,
+  inFlight,
   onOpenSeries,
 }: {
   scan?: Scan;
   setIds: string[];
   found: Set<string>;
   heroes: HeroRegistry;
-  hiddenCode?: string;
+  inFlight: InFlight;
   onOpenSeries: (code: string) => void;
 }) {
   const palette = usePalette();
@@ -98,7 +100,7 @@ export function SlimStrip({
           style={[
             styles.pillTitle,
             {color: palette.text},
-            scan && hiddenCode === scan.code && styles.hidden,
+            scan && inFlight.title === scan.code && styles.hidden,
           ]}>
           {scan ? getFigureTitle(scan.code) : t('hint.title')}
         </Text>
@@ -115,6 +117,7 @@ export function SlimStrip({
       </Animated.View>
       {setIds.length > 0 && (
         <View
+          ref={heroSourceRef(heroes)}
           style={[styles.strip, {backgroundColor: palette.surface}]}
           onLayout={event => setViewport(event.nativeEvent.layout.width)}>
           <ScrollView
@@ -148,7 +151,7 @@ export function SlimStrip({
                     style={[
                       styles.image,
                       !has && styles.missing,
-                      hiddenCode === code && styles.hidden,
+                      inFlight.codes.has(code) && styles.hidden,
                     ]}
                   />
                 </Pressable>

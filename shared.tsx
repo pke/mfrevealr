@@ -20,7 +20,21 @@ export type HeroParts = {
   title?: Measurable | null;
   titleSize?: number;
 };
-export type HeroRegistry = {current: Record<string, HeroParts>};
+export type HeroRegistry = {
+  current: Record<string, HeroParts>;
+  // The card or strip the series sheet grows out of.
+  source?: Measurable | null;
+};
+
+/** What flies to or from the series sheet, hidden where it starts or lands. */
+export type InFlight = {codes: ReadonlySet<string>; title?: string};
+export const NOTHING_IN_FLIGHT: InFlight = {codes: new Set()};
+
+export function heroSourceRef(registry: HeroRegistry) {
+  return (node: Measurable | null) => {
+    registry.source = node;
+  };
+}
 
 export function heroImageRef(
   registry: HeroRegistry,
