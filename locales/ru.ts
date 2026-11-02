@@ -48,6 +48,7 @@ const ru: Translation = {
   },
   settings: {
     title: 'Настройки',
+    version: 'Версия {{version}}',
     appearance: 'Оформление',
     layout: 'Макет',
     language: 'Язык',

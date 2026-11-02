@@ -45,6 +45,7 @@ const en = {
   },
   settings: {
     title: 'Settings',
+    version: 'Version {{version}}',
     appearance: 'Appearance',
     layout: 'Layout',
     language: 'Language',

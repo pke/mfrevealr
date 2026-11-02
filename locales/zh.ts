@@ -47,6 +47,7 @@ const zh: Translation = {
   },
   settings: {
     title: '设置',
+    version: '版本 {{version}}',
     appearance: '外观',
     layout: '布局',
     language: '语言',

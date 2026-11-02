@@ -48,6 +48,7 @@ const es: Translation = {
   },
   settings: {
     title: 'Ajustes',
+    version: 'Versión {{version}}',
     appearance: 'Apariencia',
     layout: 'Diseño',
     language: 'Idioma',

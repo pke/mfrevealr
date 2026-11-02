@@ -48,6 +48,7 @@ const pl: Translation = {
   },
   settings: {
     title: 'Ustawienia',
+    version: 'Wersja {{version}}',
     appearance: 'Wygląd',
     layout: 'Układ',
     language: 'Język',

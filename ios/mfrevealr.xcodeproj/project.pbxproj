@@ -14,6 +14,7 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		761780EF2CA45674006654EF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EE2CA45674006654EF /* SceneDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		8A338CF8E9E9DF715DFE99BC /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 6376098F666E822CD87DEAED /* Settings.bundle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		591C40C42038688BFA9C8EFB /* en */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = en; path = mfrevealr/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-mfrevealr.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-mfrevealr.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6228BB30FB2A94958B746FF1 /* ru */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = ru; path = mfrevealr/ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		6376098F666E822CD87DEAED /* Settings.bundle */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "wrapper.plug-in"; name = Settings.bundle; path = mfrevealr/Settings.bundle; sourceTree = "<group>"; };
 		6C3A3C508B236FA69428CE8A /* pt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = pt; path = mfrevealr/pt.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = mfrevealr/AppDelegate.swift; sourceTree = "<group>"; };
 		761780EE2CA45674006654EF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = mfrevealr/SceneDelegate.swift; sourceTree = "<group>"; };
@@ -61,6 +63,7 @@
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 				E32A9ED4914949A46A1E33A8 /* InfoPlist.strings */,
+				6376098F666E822CD87DEAED /* Settings.bundle */,
 			);
 			name = mfrevealr;
 			sourceTree = "<group>";
@@ -123,6 +126,7 @@
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
+				B325FCC8A1AB2FABCB0197E3 /* Write Version to Settings Bundle */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */,
 				E2A68AC2AF993CAD9F6BC7CD /* Strip Framework Symbols */,
@@ -185,6 +189,7 @@
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FB91A68108700A75B9A /* PrivacyInfo.xcprivacy in Resources */,
 				30ADFD8E4060978CE44C0EA7 /* InfoPlist.strings in Resources */,
+				8A338CF8E9E9DF715DFE99BC /* Settings.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -223,6 +228,25 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-mfrevealr/Pods-mfrevealr-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		B325FCC8A1AB2FABCB0197E3 /* Write Version to Settings Bundle */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Write Version to Settings Bundle";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/scripts/settings-version.sh\"\n";
 		};
 		C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;

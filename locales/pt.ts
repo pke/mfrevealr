@@ -49,6 +49,7 @@ const pt: Translation = {
   },
   settings: {
     title: 'Ajustes',
+    version: 'Versão {{version}}',
     appearance: 'Aparência',
     layout: 'Layout',
     language: 'Idioma',

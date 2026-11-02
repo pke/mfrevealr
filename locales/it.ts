@@ -48,6 +48,7 @@ const it: Translation = {
   },
   settings: {
     title: 'Impostazioni',
+    version: 'Versione {{version}}',
     appearance: 'Aspetto',
     layout: 'Layout',
     language: 'Lingua',

@@ -1,6 +1,7 @@
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {appVersion} from './appVersion';
 import type {UpdateResult} from './catalogStore';
 import {LANGUAGE_NAMES, LANGUAGES, LanguagePreference} from './languages';
 import type {Layout, Settings} from './settings';
@@ -240,6 +241,10 @@ export function SettingsSheet({
           </Text>
         </Pressable>
       )}
+      {/* Selectable, so it can be copied into a bug report. */}
+      <Text selectable style={[styles.version, {color: palette.secondary}]}>
+        {t('settings.version', {version: appVersion()})}
+      </Text>
     </Sheet>
   );
 }
@@ -399,5 +404,11 @@ const styles = StyleSheet.create({
   link: {
     fontSize: 16,
     textDecorationLine: 'underline',
+  },
+  version: {
+    alignSelf: 'flex-start',
+    fontSize: 13,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
 });

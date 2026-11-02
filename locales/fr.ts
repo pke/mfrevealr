@@ -47,6 +47,7 @@ const fr: Translation = {
   },
   settings: {
     title: 'Réglages',
+    version: 'Version {{version}}',
     appearance: 'Apparence',
     layout: 'Disposition',
     language: 'Langue',
