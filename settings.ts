@@ -1,6 +1,7 @@
 import React from 'react';
 import {createMMKV, type MMKV} from 'react-native-mmkv';
 import {LANGUAGES, LanguagePreference} from './languages';
+import {launchLanguage, setIOSLanguage} from './languageSync';
 import type {ThemePreference} from './theme';
 
 export type Layout = 'card' | 'split' | 'strip';
@@ -51,14 +52,32 @@ function getStorage() {
   return storage;
 }
 
+let launched = false;
+
 export function loadSettings(): Settings {
-  return parseSettings(getStorage().getString(KEY));
+  const settings = parseSettings(getStorage().getString(KEY));
+  if (launched) {
+    return settings;
+  }
+  // Once per launch, before anything shows: the language may have been
+  // changed in the iOS Settings app meanwhile.
+  launched = true;
+  const language = launchLanguage(settings.language);
+  if (language === settings.language) {
+    return settings;
+  }
+  const synced = {...settings, language};
+  getStorage().set(KEY, JSON.stringify(synced));
+  return synced;
 }
 
 /** Settings kept across launches; MMKV reads synchronously, so no flash. */
 export function useSettings(): [Settings, (change: Partial<Settings>) => void] {
   const [settings, setSettings] = React.useState(loadSettings);
   const update = React.useCallback((change: Partial<Settings>) => {
+    if (change.language) {
+      setIOSLanguage(change.language);
+    }
     setSettings(old => {
       const next = {...old, ...change};
       getStorage().set(KEY, JSON.stringify(next));

@@ -23,6 +23,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       }
     }
 
+    // The language picked on the app's page in the Settings app is the app's
+    // own AppleLanguages; changing it there relaunches the app. Plain lookups
+    // fall back to the phone's languages, so hand JS just the app's own,
+    // empty when it follows the phone (languageSync.ts).
+    let own = UserDefaults.standard.persistentDomain(
+      forName: Bundle.main.bundleIdentifier ?? "")?["AppleLanguages"] as? [String]
+    defaults["ios_language"] = own?.first ?? ""
+
     UserDefaults.standard.register(defaults: defaults)
     return true
   }
