@@ -37,6 +37,10 @@ export function deviceLanguage(locale?: string): Language {
   return LANGUAGES.find(language => language === code) ?? 'en';
 }
 
-export function resolveLanguage(preference: LanguagePreference): Language {
-  return preference === 'system' ? deviceLanguage() : preference;
+/** `phone` is the phone's own locale where the platform tells it apart. */
+export function resolveLanguage(
+  preference: LanguagePreference,
+  phone?: string,
+): Language {
+  return preference === 'system' ? deviceLanguage(phone) : preference;
 }

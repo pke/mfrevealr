@@ -1,6 +1,7 @@
 import i18next from 'i18next';
 import {initReactI18next} from 'react-i18next';
 import {Language, resolveLanguage} from './languages';
+import {phoneLocale} from './languageSync';
 import de from './locales/de';
 import en from './locales/en';
 import es from './locales/es';
@@ -23,7 +24,7 @@ i18next.use(initReactI18next).init({
       {translation},
     ]),
   ) as Record<Language, {translation: typeof en}>,
-  lng: resolveLanguage(loadSettings().language),
+  lng: resolveLanguage(loadSettings().language, phoneLocale()),
   fallbackLng: 'en',
   initAsync: false,
   // React Native renders text, not HTML; nothing to escape.

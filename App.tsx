@@ -41,6 +41,7 @@ import {
 } from './catalogStore';
 import i18n from './i18n';
 import {resolveLanguage} from './languages';
+import {phoneLocale} from './languageSync';
 import {
   getFigureTitle,
   getSetIds,
@@ -1442,7 +1443,7 @@ function App(): React.JSX.Element {
   const changeSettings = React.useCallback(
     (change: Partial<Settings>) => {
       if (change.language) {
-        i18n.changeLanguage(resolveLanguage(change.language));
+        i18n.changeLanguage(resolveLanguage(change.language, phoneLocale()));
       }
       updateSettings(change);
     },

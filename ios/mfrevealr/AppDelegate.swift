@@ -30,6 +30,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let own = UserDefaults.standard.persistentDomain(
       forName: Bundle.main.bundleIdentifier ?? "")?["AppleLanguages"] as? [String]
     defaults["ios_language"] = own?.first ?? ""
+    // And the phone's own first language, which "System" follows: the app's
+    // locale keeps reflecting its override until the next launch.
+    let phone = CFPreferencesCopyAppValue(
+      "AppleLanguages" as CFString, kCFPreferencesAnyApplication) as? [String]
+    defaults["phone_language"] = phone?.first ?? ""
 
     UserDefaults.standard.register(defaults: defaults)
     return true
