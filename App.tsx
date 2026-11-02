@@ -64,7 +64,7 @@ import {Layout, Settings, useSettings} from './settings';
 import {classifyScan} from './scanOutcome';
 import {createSightings} from './sightings';
 import {STORE_SCENE} from './storeScene';
-import {FakeCamera} from './fakeCamera';
+import {FakeCamera, type FakeCameraCode} from './fakeCamera';
 import {Lookup, LookupMessage} from './LookupMessage';
 import {ProgressBar} from './ProgressBar';
 import {SettingsSheet} from './SettingsSheet';
@@ -1312,22 +1312,34 @@ function Scanner({
   const cameraSize = React.useRef({width: 0, height: 0});
   const codeOverlayRef = React.useRef(settings.codeOverlay);
   codeOverlayRef.current = settings.codeOverlay;
-  const placeMarkers = (codes: Code[], frame: CodeScannerFrame) => {
+  // Codes read with where they are in the camera view.
+  const showMarkers = (codes: FakeCameraCode[]) => {
     if (!codeOverlayRef.current) {
       return;
     }
     const seen: Marker[] = [];
-    for (const code of codes) {
-      const entry = resolveScan(code.value);
-      const rect =
-        entry &&
-        code.frame &&
-        codeToView(code.frame, frame, cameraSize.current, Platform.OS);
-      if (entry && rect) {
+    for (const {value, rect} of codes) {
+      const entry = resolveScan(value);
+      if (entry) {
         seen.push({code: entry.code, rect});
       }
     }
     markers.see(seen, Date.now());
+  };
+  const placeMarkers = (codes: Code[], frame: CodeScannerFrame) => {
+    if (!codeOverlayRef.current) {
+      return;
+    }
+    const placed: FakeCameraCode[] = [];
+    for (const code of codes) {
+      const rect =
+        code.frame &&
+        codeToView(code.frame, frame, cameraSize.current, Platform.OS);
+      if (code.value && rect) {
+        placed.push({value: code.value, rect});
+      }
+    }
+    showMarkers(placed);
   };
   React.useEffect(() => {
     if (!settings.codeOverlay) {
@@ -1415,7 +1427,10 @@ function Scanner({
           resizeMode="cover"
         />
       ) : FakeCamera ? (
-        <FakeCamera onScan={values => onScan(values, true)} />
+        <FakeCamera
+          onScan={values => onScan(values, true)}
+          onCodes={showMarkers}
+        />
       ) : device ? (
         <Camera
           device={device}
