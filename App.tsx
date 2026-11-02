@@ -62,7 +62,7 @@ import {
 } from './shared';
 import {Insets, sheetStyles} from './Sheet';
 import {SlimStrip} from './SlimStrip';
-import {SplitChecklist} from './SplitChecklist';
+import {SPLIT_OVERLAP, SplitChecklist} from './SplitChecklist';
 import {DARK, ThemeProvider, usePalette} from './theme';
 import {Confetti} from './Confetti';
 
@@ -906,8 +906,25 @@ function SettingsButton({onPress}: {onPress: () => void}) {
       accessibilityRole="button"
       accessibilityLabel={t('settings.title')}
       hitSlop={8}
-      style={styles.settingsButton}>
+      style={styles.roundButton}>
       <Text style={styles.settingsIcon}>{'\u2699\uFE0E'}</Text>
+    </Pressable>
+  );
+}
+
+function TorchButton({on, onPress}: {on: boolean; onPress: () => void}) {
+  const {t} = useTranslation();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="switch"
+      accessibilityState={{checked: on}}
+      accessibilityLabel={t('camera.torch')}
+      hitSlop={8}
+      style={[styles.roundButton, on && styles.torchOn]}>
+      <Text style={[styles.torchIcon, on && styles.torchIconOn]}>
+        {'\u26A1\uFE0E'}
+      </Text>
     </Pressable>
   );
 }
@@ -940,6 +957,7 @@ function Scanner({
   const [seriesOpen, setSeriesOpen] = React.useState(false);
   const [heroFlying, setHeroFlying] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
+  const [torch, setTorch] = React.useState(false);
   // Where each figure sits in the current layout, and the one the series
   // sheet flies to and from: the card's figure or the tapped thumbnail.
   const heroes = React.useRef<HeroRegistry['current']>({});
@@ -1096,6 +1114,7 @@ function Scanner({
           preview
           enableZoomGesture={false}
           audio={false}
+          torch={torch ? 'on' : 'off'}
         />
       ) : (
         <Text style={styles.noCamera}>{t('camera.unavailable')}</Text>
@@ -1108,9 +1127,18 @@ function Scanner({
       />
     </View>
   );
-  const topBar = (
-    <View style={styles.topBar} pointerEvents="box-none">
+  // Right above the card, strip or checklist, within reach of the thumb.
+  const controls = (
+    <View
+      style={[
+        styles.controls,
+        layout === 'split' && {paddingBottom: CONTROLS_GAP + SPLIT_OVERLAP},
+      ]}
+      pointerEvents="box-none">
       <SettingsButton onPress={() => setSettingsOpen(true)} />
+      {device?.hasTorch && (
+        <TorchButton on={torch} onPress={() => setTorch(on => !on)} />
+      )}
     </View>
   );
 
@@ -1124,8 +1152,8 @@ function Scanner({
             <View
               style={[styles.overlay, {paddingTop: insets.top}]}
               pointerEvents="box-none">
-              {topBar}
               <Viewfinder />
+              {controls}
             </View>
           </View>
           <SplitChecklist
@@ -1146,8 +1174,8 @@ function Scanner({
               {paddingTop: insets.top, paddingBottom: insets.bottom},
             ]}
             pointerEvents="box-none">
-            {topBar}
             <Viewfinder />
+            {controls}
             {layout === 'card' ? (
               <RevealCard
                 scan={lastScan}
@@ -1200,6 +1228,7 @@ function Scanner({
   );
 }
 
+const CONTROLS_GAP = 10;
 const CORNER = 32;
 const STROKE = 5;
 
@@ -1222,14 +1251,14 @@ const styles = StyleSheet.create({
     experimental_backgroundImage:
       'linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0))',
   },
-  topBar: {
+  controls: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    gap: 12,
     paddingHorizontal: 16,
-    paddingTop: 8,
-    minHeight: 48,
+    paddingBottom: CONTROLS_GAP,
   },
-  settingsButton: {
+  roundButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -1241,6 +1270,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 28,
     lineHeight: 32,
+  },
+  torchOn: {
+    backgroundColor: '#ffd23f',
+  },
+  torchIcon: {
+    color: '#fff',
+    fontSize: 22,
+    lineHeight: 26,
+  },
+  torchIconOn: {
+    color: '#1a1a1a',
   },
   center: {
     flex: 1,

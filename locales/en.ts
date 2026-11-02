@@ -7,6 +7,7 @@ const en = {
   },
   camera: {
     unavailable: 'No camera available',
+    torch: 'Flashlight',
   },
   hint: {
     title: 'Scan a box',

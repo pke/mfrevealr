@@ -115,9 +115,12 @@ export function SplitChecklist({
   );
 }
 
+/** How far the checklist's rounded top reaches up over the camera. */
+export const SPLIT_OVERLAP = 24;
+
 const styles = StyleSheet.create({
   panel: {
-    marginTop: -24,
+    marginTop: -SPLIT_OVERLAP,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 16,

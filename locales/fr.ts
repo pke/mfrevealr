@@ -9,6 +9,7 @@ const fr: Translation = {
   },
   camera: {
     unavailable: 'Aucun appareil photo disponible',
+    torch: 'Lampe torche',
   },
   hint: {
     title: 'Scannez une boîte',

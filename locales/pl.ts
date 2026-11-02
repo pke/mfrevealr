@@ -9,6 +9,7 @@ const pl: Translation = {
   },
   camera: {
     unavailable: 'Aparat jest niedostępny',
+    torch: 'Latarka',
   },
   hint: {
     title: 'Zeskanuj opakowanie',

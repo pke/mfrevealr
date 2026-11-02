@@ -9,6 +9,7 @@ const zh: Translation = {
   },
   camera: {
     unavailable: '没有可用的相机',
+    torch: '手电筒',
   },
   hint: {
     title: '扫描包装盒',

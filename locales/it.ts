@@ -9,6 +9,7 @@ const it: Translation = {
   },
   camera: {
     unavailable: 'Nessuna fotocamera disponibile',
+    torch: 'Torcia',
   },
   hint: {
     title: 'Scansiona una scatola',

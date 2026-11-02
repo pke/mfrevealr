@@ -9,6 +9,7 @@ const es: Translation = {
   },
   camera: {
     unavailable: 'No hay cámara disponible',
+    torch: 'Linterna',
   },
   hint: {
     title: 'Escanea una caja',

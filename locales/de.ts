@@ -9,6 +9,7 @@ const de: Translation = {
   },
   camera: {
     unavailable: 'Keine Kamera verfügbar',
+    torch: 'Taschenlampe',
   },
   hint: {
     title: 'Packung scannen',

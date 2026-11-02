@@ -9,6 +9,7 @@ const ru: Translation = {
   },
   camera: {
     unavailable: 'Камера недоступна',
+    torch: 'Фонарик',
   },
   hint: {
     title: 'Отсканируйте коробку',

@@ -10,6 +10,7 @@ const pt: Translation = {
   },
   camera: {
     unavailable: 'Nenhuma câmera disponível',
+    torch: 'Lanterna',
   },
   hint: {
     title: 'Escaneie uma caixa',
