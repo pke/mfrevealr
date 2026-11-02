@@ -35,6 +35,13 @@ test('On the first launch the app tells iOS its language', () => {
   expect(mockDefaults.synced_language).toBe('de');
 });
 
+test('A language set in the Settings app before the update is kept', () => {
+  mockDefaults = {ios_language: 'de-DE', AppleLanguages: ['de-DE']};
+  expect(launchLanguage('system')).toBe('de');
+  expect(mockDefaults.AppleLanguages).toEqual(['de']);
+  expect(mockDefaults.synced_language).toBe('de');
+});
+
 test('A language picked in the Settings app wins at the next launch', () => {
   mockDefaults = {synced_language: 'de', ios_language: 'fr-FR'};
   expect(launchLanguage('de')).toBe('fr');

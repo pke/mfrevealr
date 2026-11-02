@@ -64,7 +64,8 @@ export function setIOSLanguage(language: LanguagePreference) {
 /**
  * The language to start in. A change made in the Settings app since the
  * last launch (which relaunches the app) wins; otherwise the app's own
- * choice goes to iOS.
+ * choice goes to iOS. Before the first sync, a language already picked in
+ * the Settings app (possible before the app had a picker) is kept.
  */
 export function launchLanguage(stored: LanguagePreference): LanguagePreference {
   if (Platform.OS !== 'ios') {
@@ -74,7 +75,11 @@ export function launchLanguage(stored: LanguagePreference): LanguagePreference {
   try {
     const synced = Settings.get(SYNCED);
     const fromIOS = iosLanguage();
-    if (typeof synced === 'string' && fromIOS !== synced) {
+    const firstSync = typeof synced !== 'string';
+    if (
+      (firstSync && fromIOS !== 'system') ||
+      (!firstSync && fromIOS !== synced)
+    ) {
       language = fromIOS;
     }
   } catch {
