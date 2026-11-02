@@ -399,10 +399,12 @@ function FlyingFigure({
   flight,
   progress,
   sheetY,
+  onReady,
 }: {
   flight: Flight;
   progress: Animated.Value;
   sheetY: Animated.Value;
+  onReady: (flight: Flight) => void;
 }) {
   const {from, to} = flight;
   const dx = from.x + from.width / 2 - (to.x + to.width / 2);
@@ -411,6 +413,7 @@ function FlyingFigure({
     <Animated.Image
       source={IMAGES[flight.code]}
       resizeMode="contain"
+      onLoad={() => onReady(flight)}
       style={[
         styles.flying,
         {
@@ -603,36 +606,73 @@ function Collection({
     [heroCode, heroes, height, insets.bottom, found, palette],
   );
 
+  // The flying copy takes over from the card or tile only once it is on
+  // screen: a new image paints when it has loaded, and a native-driven
+  // animation that is already running never reaches views that attach to its
+  // value later. Until then the original stays visible and nothing moves.
+  const [readyFlight, setReadyFlight] = React.useState<Flight>();
+  const flightReady = flight !== undefined && readyFlight === flight;
+  React.useEffect(() => {
+    onFlying(flightReady);
+  }, [flightReady, onFlying]);
+  React.useEffect(() => {
+    if (!flight || readyFlight === flight) {
+      return;
+    }
+    // An image that never reports in must not hold the sheet back.
+    const timer = setTimeout(() => setReadyFlight(flight), 250);
+    return () => clearTimeout(timer);
+  }, [flight, readyFlight]);
+
+  const [pendingRun, setPendingRun] = React.useState<{
+    toValue: number;
+    flight?: Flight;
+    done: () => void;
+    started?: boolean;
+  }>();
   const run = React.useCallback(
     (toValue: number, prepared: Flight | undefined, done: () => void) => {
       setFlight(prepared);
-      onFlying(Boolean(prepared));
-      const spring = {
-        useNativeDriver: true,
-        damping: 22,
-        stiffness: 200,
-        mass: 1,
-        overshootClamping: true,
-      };
-      Animated.spring(sheetY, {
-        ...spring,
-        toValue: toValue === 1 ? 0 : sheetHeight,
-      }).start();
-      Animated.timing(fade, {
-        toValue,
-        duration: toValue === 1 ? 150 : 200,
-        useNativeDriver: true,
-      }).start();
-      Animated.spring(progress, {...spring, toValue}).start(({finished}) => {
-        if (finished) {
-          setFlight(undefined);
-          onFlying(false);
-          done();
-        }
-      });
+      setPendingRun({toValue, flight: prepared, done});
     },
-    [progress, sheetY, fade, sheetHeight, onFlying],
+    [],
   );
+
+  React.useEffect(() => {
+    if (
+      !pendingRun ||
+      pendingRun.started ||
+      (pendingRun.flight && readyFlight !== pendingRun.flight)
+    ) {
+      return;
+    }
+    pendingRun.started = true;
+    const {toValue, done} = pendingRun;
+    const spring = {
+      useNativeDriver: true,
+      damping: 22,
+      stiffness: 200,
+      mass: 1,
+      overshootClamping: true,
+    };
+    Animated.spring(sheetY, {
+      ...spring,
+      toValue: toValue === 1 ? 0 : sheetHeight,
+    }).start();
+    Animated.timing(fade, {
+      toValue,
+      duration: toValue === 1 ? 150 : 200,
+      useNativeDriver: true,
+    }).start();
+    Animated.spring(progress, {...spring, toValue}).start(({finished}) => {
+      if (finished) {
+        setFlight(undefined);
+        done();
+      }
+    });
+    // Each run starts once; the rest is read as it was when it was asked for.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingRun, readyFlight]);
 
   // Swipe down to dismiss, from anywhere while the sheet is scrolled to the
   // top. The sheet follows the finger and the figure heads back to the card.
@@ -653,10 +693,7 @@ function Collection({
       onPanResponderGrant: () => {
         // Measured before the first move, while the tile is still in place.
         swipeFlight.current = prepareFlight(false, 0);
-        swipeFlight.current.then(prepared => {
-          setFlight(prepared);
-          onFlying(Boolean(prepared));
-        });
+        swipeFlight.current.then(setFlight);
       },
       onPanResponderMove: (_, {dy}) => {
         const flown = Math.min(1, Math.max(0, dy) / distance);
@@ -678,7 +715,6 @@ function Collection({
     prepareFlight,
     run,
     onClose,
-    onFlying,
   ]);
 
   React.useEffect(() => {
@@ -693,18 +729,30 @@ function Collection({
   // Opening waits for the grid's first layout at its fitted size, so the target
   // tile is measurable.
   const opened = React.useRef(false);
+  const visibleRef = React.useRef(visible);
+  visibleRef.current = visible;
   const onGridLayout = React.useCallback(() => {
     if (!visible || opened.current) {
       return;
     }
     opened.current = true;
-    prepareFlight(true, sheetHeight).then(prepared =>
-      run(1, prepared, () => {}),
-    );
+    prepareFlight(true, sheetHeight).then(prepared => {
+      // Closed while measuring: the closing flight has taken over.
+      if (visibleRef.current) {
+        run(1, prepared, () => {});
+      }
+    });
   }, [visible, sheetHeight, prepareFlight, run]);
 
   React.useEffect(() => {
-    if (visible || !mounted || !opened.current) {
+    if (visible || !mounted) {
+      return;
+    }
+    if (!opened.current) {
+      // Closed before the grid was laid out: nothing showed yet, so start
+      // from scratch next time instead of waiting for a layout that has
+      // already happened.
+      setMounted(false);
       return;
     }
     opened.current = false;
@@ -824,7 +872,7 @@ function Collection({
               {setIds.map(item => {
                 const has = found.has(item);
                 const title = getFigureTitle(item);
-                const inFlight = flight?.code === item;
+                const inFlight = flightReady && flight?.code === item;
                 return (
                   <Pressable
                     key={item}
@@ -889,9 +937,14 @@ function Collection({
         </ScrollView>
       </Animated.View>
       {flight && (
-        <FlyingFigure flight={flight} progress={progress} sheetY={sheetY} />
+        <FlyingFigure
+          flight={flight}
+          progress={progress}
+          sheetY={sheetY}
+          onReady={setReadyFlight}
+        />
       )}
-      {flight?.title && (
+      {flightReady && flight?.title && (
         <FlyingTitle
           title={flight.title}
           figure={flight.from}
@@ -1095,6 +1148,9 @@ function Scanner({
 
   const setName = getSetName(currentSetId);
   const openSeries = (code?: string) => {
+    // Right away, not with the next render: a box scanned meanwhile would
+    // swap the figure on the card that is about to fly into the sheet.
+    sheetOpenRef.current = true;
     setHeroCode(code ?? lastScan?.code);
     setSeriesOpen(true);
   };
@@ -1145,7 +1201,12 @@ function Scanner({
         layout === 'split' && {paddingBottom: CONTROLS_GAP + SPLIT_OVERLAP},
       ]}
       pointerEvents="box-none">
-      <SettingsButton onPress={() => setSettingsOpen(true)} />
+      <SettingsButton
+        onPress={() => {
+          sheetOpenRef.current = true;
+          setSettingsOpen(true);
+        }}
+      />
       {(device?.hasTorch || FakeCamera) && (
         <TorchButton on={torch} onPress={() => setTorch(on => !on)} />
       )}
