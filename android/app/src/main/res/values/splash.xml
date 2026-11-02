@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The yellow of the icon's art (ic_launcher_foreground), so they meet
+         without an edge; the icon background is a shade off. -->
+    <color name="splash_background">#FEDE00</color>
+</resources>

@@ -64,6 +64,21 @@ const fr: Translation = {
     current: 'À jour',
     updated: 'Mis à jour',
     failed: 'Mise à jour impossible. Réessayez plus tard.',
+    looking: 'Recherche de nouvelles figurines…',
+    updating: 'Chargement des nouvelles figurines…',
+    arrived: 'De nouvelles figurines sont arrivées',
+    lookupFailed:
+      'Impossible de charger les nouvelles figurines. Réessayez plus tard.',
+  },
+  lookup: {
+    looking: 'Recherche de cette figurine…',
+    searching:
+      'Le code {{code}} n’est pas encore dans le catalogue. Recherche de nouvelles figurines.',
+    unknown: 'Figurine inconnue',
+    notInCatalog: 'Le code {{code}} n’est pas encore dans le catalogue.',
+    failed:
+      'Impossible de rechercher de nouvelles figurines. Réessayez plus tard.',
+    notABox: 'Ce n’est pas une boîte de minifigurine',
   },
   layouts: {
     card: {

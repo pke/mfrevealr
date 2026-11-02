@@ -1,5 +1,4 @@
-import BUNDLED_SETS from './images/sets/sets.json';
-import BUNDLED_SERIES from './images/sets/series.json';
+import {BUNDLED} from './catalogSource';
 
 type Entry = {
   setId: string;
@@ -25,7 +24,7 @@ function isUri(value: string) {
 }
 
 const AMBIGUOUS = new Set<string>();
-let SERIES: Series = BUNDLED_SERIES;
+let SERIES: Series = BUNDLED.series;
 
 function register(code: string, entry: Entry) {
   if (AMBIGUOUS.has(code)) {
@@ -88,7 +87,7 @@ export function setCatalog(sets: Sets, series: Series) {
   });
 }
 
-setCatalog(BUNDLED_SETS as Sets, BUNDLED_SERIES);
+setCatalog(BUNDLED.sets, BUNDLED.series);
 
 /** Codes that are claimed by more than one figure and therefore never resolve. */
 export function getConflictingCodes() {
@@ -109,6 +108,15 @@ export function resolveCode(code: string | undefined) {
 export function resolveScan(value: string | undefined) {
   const [figCode] = value?.trim().split(/\s+/) || [];
   return resolveCode(figCode);
+}
+
+/**
+ * The figure code of a scanned box, known or not: 7 digits before the batch
+ * data. Other data matrices, from any other product, have none.
+ */
+export function scannedCode(value: string | undefined) {
+  const [figCode] = value?.trim().split(/\s+/) || [];
+  return figCode && /^\d{7}$/.test(figCode) ? figCode : undefined;
 }
 
 export function getSetIds(setId: string) {

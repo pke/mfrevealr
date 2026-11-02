@@ -2,8 +2,15 @@
 # E2E_BUILD=1 builds only: registers the mfrevealr-e2e:// link that end-to-end
 # tests open to feed scans to the simulated camera (e2e/app/fakeCamera.tsx).
 # Store builds don't declare it, so no app or page can open such a link.
+# The phase lists the processed Info.plist as its input, so Xcode runs it
+# after writing that file, not before.
 set -e
 [ -n "$E2E_BUILD" ] || exit 0
+# E2E_BUILD also bundles the simulated camera; an archive is for the store.
+if [ "$ACTION" = "install" ]; then
+  echo "error: E2E_BUILD is set: test builds must never be archived" >&2
+  exit 1
+fi
 plist="$TARGET_BUILD_DIR/$INFOPLIST_PATH"
 /usr/libexec/PlistBuddy -c "Delete :CFBundleURLTypes" "$plist" 2>/dev/null || true
 /usr/libexec/PlistBuddy \

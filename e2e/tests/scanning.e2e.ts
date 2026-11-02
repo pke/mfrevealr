@@ -28,10 +28,7 @@ test('each new box of the series adds to the collection', async ({
   await expect(card).toContainText('2 of 12');
 });
 
-test('a figure found before is not counted twice', async ({
-  device,
-  screen,
-}) => {
+test('a figure found before is not counted twice', async ({device, screen}) => {
   await scan(device, BOX.fitness);
   await scan(device, BOX.sprite);
   await scan(device, BOX.fitness);
@@ -53,8 +50,16 @@ test('a box from another series starts that series', async ({
   await expect(card).toContainText('1 of 12');
 });
 
-test('a code that is no minifigure is ignored', async ({device, screen}) => {
-  await scan(device, '1234567 0000');
-  await expect(screen.getByTestId('fake-camera')).toContainText('1234567');
-  await expect(screen.getByTestId('scan-hint')).toBeVisible();
+test('a code that is no minifigure box says so', async ({device, screen}) => {
+  await scan(device, 'NOT A BOX');
+  await expect(screen.getByTestId('fake-camera')).toContainText('NOT A BOX');
+  await expect(screen.getByTestId('lookup-message')).toContainText(
+    'Not a minifigure box',
+  );
+  // A real box afterwards shows as usual.
+  await scan(device, BOX.fitness);
+  await expect(screen.getByTestId('reveal-card')).toContainText(
+    'Fitness Instructor',
+  );
+  await expect(screen.getByTestId('lookup-message')).toBeHidden();
 });

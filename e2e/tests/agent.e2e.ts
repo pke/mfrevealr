@@ -1,4 +1,4 @@
-import {BOX, expect, scan, SERIES_25, test} from '../support';
+import {BOX, expect, scan, SERIES_25, splashGone, test} from '../support';
 
 // Goals in plain language, checked with exact assertions. They need a model:
 // set ANTHROPIC_API_KEY. Without it these skip; the rest of the suite runs.
@@ -22,7 +22,8 @@ test('the revealed figure is shown as a picture', async ({agent, device}) => {
   test.skip(noModel, 'needs ANTHROPIC_API_KEY');
   await scan(device, BOX.barbarian);
   // The figure image is part of the card's accessibility node, so the
-  // judge needs the screenshot to see it.
+  // judge needs the screenshot to see it, and the splash gone.
+  await splashGone();
   await agent.assert(
     'the card shows a picture of a minifigure and the name Fierce Barbarian',
     {vision: true},

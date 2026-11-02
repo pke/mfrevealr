@@ -31,7 +31,7 @@ const IPHONE_APP = 'build/e2e-iphone/Build/Products/Release-iphoneos/mfrevealr.a
 
 /** The newest release APK; its name carries a build timestamp. */
 function androidApk() {
-  const dir = 'android/app/build/outputs/apk/release';
+  const dir = 'android/app/build/outputs/apk/e2e';
   const apks = fs.existsSync(dir)
     ? fs
         .readdirSync(dir)

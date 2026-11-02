@@ -85,6 +85,16 @@ export function ScanHint() {
   );
 }
 
+// The viewfinder's corners, also drawn by the splash that flies into them.
+export const CORNER = 32;
+const STROKE = 5;
+
+export type CornerAt = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
+
+export function ViewfinderCorner({at}: {at: CornerAt}) {
+  return <View style={[styles.corner, styles[at]]} />;
+}
+
 export function CheckBadge({size = 26}: {size?: number}) {
   const palette = usePalette();
   return (
@@ -110,6 +120,31 @@ export function CheckBadge({size = 26}: {size?: number}) {
 }
 
 const styles = StyleSheet.create({
+  corner: {
+    width: CORNER,
+    height: CORNER,
+    borderColor: '#fff',
+  },
+  topLeft: {
+    borderTopWidth: STROKE,
+    borderLeftWidth: STROKE,
+    borderTopLeftRadius: 10,
+  },
+  topRight: {
+    borderTopWidth: STROKE,
+    borderRightWidth: STROKE,
+    borderTopRightRadius: 10,
+  },
+  bottomLeft: {
+    borderBottomWidth: STROKE,
+    borderLeftWidth: STROKE,
+    borderBottomLeftRadius: 10,
+  },
+  bottomRight: {
+    borderBottomWidth: STROKE,
+    borderRightWidth: STROKE,
+    borderBottomRightRadius: 10,
+  },
   title: {
     fontSize: 22,
     fontWeight: '700',

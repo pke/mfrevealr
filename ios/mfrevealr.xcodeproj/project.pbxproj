@@ -239,6 +239,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)",
 			);
 			name = "Register Test Link (E2E builds)";
 			outputFileListPaths = (

@@ -1,6 +1,7 @@
 import React from 'react';
 
 import {
+  AccessibilityInfo,
   Alert,
   Animated,
   AppState,
@@ -35,10 +36,17 @@ import {
 } from 'react-native-vision-camera';
 import IMAGES from './figureImages';
 import {
+  CatalogProgress,
+  getCatalogProgress,
+  getCatalogRevision,
   loadStoredCatalog,
+  onCatalogProgress,
   updateCatalog,
+  useCatalogProgress,
   useCatalogRevision,
 } from './catalogStore';
+import {CatalogNotice, createCatalogUpdates} from './catalogUpdates';
+import {refuse} from './haptics';
 import i18n from './i18n';
 import {resolveLanguage} from './languages';
 import {phoneLocale} from './languageSync';
@@ -47,14 +55,19 @@ import {
   getSetIds,
   getSetName,
   resolveScan,
+  scannedCode,
 } from './resolveCode';
 import {Layout, Settings, useSettings} from './settings';
+import {classifyScan} from './scanOutcome';
 import {createSightings} from './sightings';
 import {STORE_SCENE} from './storeScene';
 import {FakeCamera} from './fakeCamera';
+import {Lookup, LookupMessage} from './LookupMessage';
+import {ProgressBar} from './ProgressBar';
 import {SettingsSheet} from './SettingsSheet';
 import {
   CheckBadge,
+  CornerAt,
   heroImageRef,
   HeroRegistry,
   heroTitleRef,
@@ -62,7 +75,16 @@ import {
   Scan,
   ScanHint,
   scanStatus,
+  ViewfinderCorner,
 } from './shared';
+import {
+  getSplashTargets,
+  onSplashTargets,
+  reportCameraReady,
+  reportSplashDone,
+  reportViewfinder,
+} from './splash';
+import {SplashOverlay} from './SplashOverlay';
 import {Insets, sheetStyles} from './Sheet';
 import {SlimStrip} from './SlimStrip';
 import {SPLIT_OVERLAP, SplitChecklist} from './SplitChecklist';
@@ -126,25 +148,58 @@ function Viewfinder() {
   const [area, setArea] = React.useState({width: 0, height: 0});
   const width = Math.min(area.width * 0.62, 280, (area.height * 0.85) / 0.75);
   const frame = {width, height: width * 0.75};
+  const frameRef = React.useRef<Measurable>(null);
+  // Its corners show once the splash's have flown into them.
+  const {done: splashDone} = React.useSyncExternalStore(
+    onSplashTargets,
+    getSplashTargets,
+  );
+  // The splash flies its corners into these.
+  const report = () =>
+    frameRef.current?.measureInWindow((x, y, w, h) =>
+      reportViewfinder({x, y, width: w, height: h}),
+    );
   return (
     <View
       pointerEvents="none"
       style={styles.center}
       onLayout={event => setArea(event.nativeEvent.layout)}>
       {width > 0 && (
-        <View style={frame}>
-          <View style={[styles.corner, styles.topLeft]} />
-          <View style={[styles.corner, styles.topRight]} />
-          <View style={[styles.corner, styles.bottomLeft]} />
-          <View style={[styles.corner, styles.bottomRight]} />
+        <View
+          ref={(node: Measurable | null) => {
+            frameRef.current = node;
+          }}
+          style={frame}
+          onLayout={report}>
+          {CORNERS.map(at => (
+            <View
+              key={at}
+              style={[styles.corner, styles[at], !splashDone && styles.hidden]}>
+              <ViewfinderCorner at={at} />
+            </View>
+          ))}
         </View>
       )}
     </View>
   );
 }
 
+// Store screenshots show no splash.
+if (STORE_SCENE) {
+  reportSplashDone();
+}
+
+const CORNERS: CornerAt[] = [
+  'topLeft',
+  'topRight',
+  'bottomLeft',
+  'bottomRight',
+];
+
 function RevealCard({
   scan,
+  lookup,
+  catalogProgress,
   found,
   total,
   setName,
@@ -153,6 +208,9 @@ function RevealCard({
   onOpenSeries,
 }: {
   scan?: Scan;
+  // A scan that revealed no figure; shown instead of the last one.
+  lookup?: Lookup;
+  catalogProgress?: CatalogProgress;
   found: number;
   total: number;
   setName?: string;
@@ -175,6 +233,13 @@ function RevealCard({
     }).start();
   }, [scan, appear]);
 
+  if (lookup) {
+    return (
+      <View style={[styles.card, {backgroundColor: palette.surface}]}>
+        <LookupMessage lookup={lookup} progress={catalogProgress} />
+      </View>
+    );
+  }
   if (!scan) {
     return (
       <View style={[styles.card, {backgroundColor: palette.surface}]}>
@@ -708,15 +773,7 @@ function Collection({
       onPanResponderTerminate: snapBack,
       onPanResponderTerminationRequest: () => false,
     });
-  }, [
-    sheetY,
-    progress,
-    fade,
-    sheetHeight,
-    prepareFlight,
-    run,
-    onClose,
-  ]);
+  }, [sheetY, progress, fade, sheetHeight, prepareFlight, run, onClose]);
 
   React.useEffect(() => {
     if (visible && !mounted) {
@@ -1012,6 +1069,54 @@ function TorchButton({on, onPress}: {on: boolean; onPress: () => void}) {
   );
 }
 
+const NOTICE_TEXT = {
+  looking: 'catalog.looking',
+  updating: 'catalog.updating',
+  updated: 'catalog.arrived',
+  failed: 'catalog.lookupFailed',
+} as const;
+
+/** Tells over the camera about a catalog update the user should know of. */
+function CatalogBanner({
+  notice,
+  progress,
+  top,
+}: {
+  notice: CatalogNotice | undefined;
+  progress: CatalogProgress | undefined;
+  top: number;
+}) {
+  const palette = usePalette();
+  const {t} = useTranslation();
+  const text = notice && t(NOTICE_TEXT[notice.kind]);
+  React.useEffect(() => {
+    if (text) {
+      AccessibilityInfo.announceForAccessibility(text);
+    }
+  }, [text]);
+  if (!notice) {
+    return null;
+  }
+  const busy = notice.kind === 'looking' || notice.kind === 'updating';
+  const counted = progress?.phase === 'downloading';
+  return (
+    <View pointerEvents="none" style={[styles.bannerArea, {top: top + 12}]}>
+      <View
+        testID="catalog-notice"
+        style={[styles.banner, {backgroundColor: palette.surface}]}>
+        <Text style={[styles.bannerText, {color: palette.text}]}>{text}</Text>
+        {busy && (
+          <ProgressBar
+            testID="catalog-notice-progress"
+            done={counted ? progress.done : undefined}
+            total={counted ? progress.total : undefined}
+          />
+        )}
+      </View>
+    </View>
+  );
+}
+
 function Scanner({
   settings,
   onChangeSettings,
@@ -1032,6 +1137,24 @@ function Scanner({
   const screenSize = useWindowDimensions();
   const {t} = useTranslation();
   const catalogRevision = useCatalogRevision();
+  const catalogProgress = useCatalogProgress();
+  const [catalogNotice, setCatalogNotice] = React.useState<CatalogNotice>();
+  const [lookup, setLookup] = React.useState<Lookup>();
+  const lookupRef = React.useRef(lookup);
+  lookupRef.current = lookup;
+  const [catalogUpdates] = React.useState(() =>
+    createCatalogUpdates({
+      update: updateCatalog,
+      revision: getCatalogRevision,
+      progress: {get: getCatalogProgress, subscribe: onCatalogProgress},
+      onNotice: setCatalogNotice,
+    }),
+  );
+  React.useEffect(() => {
+    // Start with the catalog downloaded before, then look for a newer one.
+    loadStoredCatalog().then(() => catalogUpdates.atStart());
+    return () => catalogUpdates.dispose();
+  }, [catalogUpdates]);
   // Store screenshots start mid-collection; the app itself starts empty.
   const scene = STORE_SCENE;
   const [figuresInSet, setFiguresInSet] = React.useState(
@@ -1060,6 +1183,12 @@ function Scanner({
     }, 1000);
     return () => clearTimeout(timer);
   }, [scene]);
+  // Without a real camera there's no picture to wait for (splash.ts).
+  React.useEffect(() => {
+    if (FakeCamera || !device) {
+      reportCameraReady();
+    }
+  }, [device]);
   // Both platforms draw edge to edge, under the status and navigation bars.
   const {top, bottom} = useSafeAreaInsets();
   const insets: Insets = {top, bottom};
@@ -1096,17 +1225,23 @@ function Scanner({
   // `deliberate` scans (the test camera) are one box held up on purpose, so
   // they count even when the same box was seen just before.
   const onScan = (values: (string | undefined)[], deliberate = false) => {
-    const entries = values
-      .map(resolveScan)
-      .filter(entry => entry !== undefined);
-    // Every box in the frame is recorded, also behind a sheet, so a box that
-    // stays in view never counts again, and two boxes don't take turns.
-    const fresh = entries.filter(entry => sightings.see(entry.code));
-    const entry = deliberate ? entries[0] : fresh[0];
-    if (sheetOpenRef.current || !entry) {
+    // Recorded also behind a sheet, so a box that stays in view never counts
+    // again once it closes.
+    const outcome = classifyScan(values, sightings, deliberate);
+    if (sheetOpenRef.current || !outcome) {
       return;
     }
-    const {code, setId} = entry;
+    if (outcome.kind === 'ignored') {
+      refuse();
+      setLookup({kind: 'notABox'});
+      return;
+    }
+    if (outcome.kind === 'unknown') {
+      lookUp(outcome.value);
+      return;
+    }
+    setLookup(undefined);
+    const {code, setId} = outcome.entry;
     let isNew = true;
     if (setId !== currentSetIdRef.current) {
       // A box from another series starts a new collection.
@@ -1123,6 +1258,31 @@ function Scanner({
       vibrate();
     }
     setLastScan({code, isNew});
+  };
+
+  const onScanRef = React.useRef(onScan);
+  onScanRef.current = onScan;
+  // A newer catalog may know the box; then it shows like any other.
+  // The reveal card shows the search and its outcome; the other layouts
+  // have no card for it and get the banner.
+  const lookUp = (value: string) => {
+    const code = scannedCode(value)!;
+    setLookup({kind: 'looking', code});
+    const notify = settings.layout !== 'card';
+    catalogUpdates.lookUp(code, {notify}).then(result => {
+      const current = lookupRef.current;
+      // Another scan took over meanwhile.
+      if (current?.kind !== 'looking' || current.code !== code) {
+        return;
+      }
+      if (result === 'updated' && resolveScan(value)) {
+        setLookup(undefined);
+        onScanRef.current([value], true);
+        return;
+      }
+      refuse();
+      setLookup({kind: result === 'failed' ? 'failed' : 'unknown', code});
+    });
   };
 
   const codeScanner = useCodeScanner({
@@ -1159,6 +1319,7 @@ function Scanner({
         onPress: () => {
           setFiguresInSet(new Set());
           setLastScan(undefined);
+          setLookup(undefined);
           sightings.clear();
           setSeriesOpen(false);
           setSettingsOpen(false);
@@ -1209,6 +1370,7 @@ function Scanner({
           enableZoomGesture={false}
           audio={false}
           torch={torch ? 'on' : 'off'}
+          onPreviewStarted={reportCameraReady}
         />
       ) : (
         <Text style={styles.noCamera}>{t('camera.unavailable')}</Text>
@@ -1278,6 +1440,8 @@ function Scanner({
             {layout === 'card' ? (
               <RevealCard
                 scan={lastScan}
+                lookup={lookup}
+                catalogProgress={catalogProgress}
                 found={figuresInSet.size}
                 total={setIds.length}
                 setName={setName}
@@ -1298,6 +1462,11 @@ function Scanner({
           </View>
         </>
       )}
+      <CatalogBanner
+        notice={catalogNotice}
+        progress={catalogProgress}
+        top={insets.top}
+      />
       <Collection
         visible={seriesOpen}
         setName={setName}
@@ -1317,6 +1486,7 @@ function Scanner({
         settings={settings}
         canReset={figuresInSet.size > 0}
         catalogRevision={catalogRevision}
+        catalogProgress={catalogProgress}
         onCheckCatalog={updateCatalog}
         onChange={onChangeSettings}
         onReset={confirmReset}
@@ -1328,8 +1498,6 @@ function Scanner({
 }
 
 const CONTROLS_GAP = 10;
-const CORNER = 32;
-const STROKE = 5;
 
 const styles = StyleSheet.create({
   screen: {
@@ -1341,6 +1509,30 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFill,
+  },
+  bannerArea: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    alignItems: 'center',
+  },
+  banner: {
+    width: '100%',
+    maxWidth: 420,
+    gap: 10,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: {width: 0, height: 4},
+    elevation: 6,
+  },
+  bannerText: {
+    fontSize: 15,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   statusScrim: {
     position: 'absolute',
@@ -1388,37 +1580,22 @@ const styles = StyleSheet.create({
   },
   corner: {
     position: 'absolute',
-    width: CORNER,
-    height: CORNER,
-    borderColor: '#fff',
   },
   topLeft: {
     top: 0,
     left: 0,
-    borderTopWidth: STROKE,
-    borderLeftWidth: STROKE,
-    borderTopLeftRadius: 10,
   },
   topRight: {
     top: 0,
     right: 0,
-    borderTopWidth: STROKE,
-    borderRightWidth: STROKE,
-    borderTopRightRadius: 10,
   },
   bottomLeft: {
     bottom: 0,
     left: 0,
-    borderBottomWidth: STROKE,
-    borderLeftWidth: STROKE,
-    borderBottomLeftRadius: 10,
   },
   bottomRight: {
     bottom: 0,
     right: 0,
-    borderBottomWidth: STROKE,
-    borderRightWidth: STROKE,
-    borderBottomRightRadius: 10,
   },
   card: {
     marginHorizontal: 12,
@@ -1534,10 +1711,6 @@ function App(): React.JSX.Element {
   // i18n starts in the stored language. Switching it in the same event as the
   // setting re-renders both together, so the picker and the text never
   // disagree for a frame.
-  // Start with the catalog downloaded before, then look for a newer one.
-  React.useEffect(() => {
-    loadStoredCatalog().then(updateCatalog);
-  }, []);
   const changeSettings = React.useCallback(
     (change: Partial<Settings>) => {
       if (change.language) {
@@ -1551,6 +1724,7 @@ function App(): React.JSX.Element {
     <SafeAreaProvider>
       <ThemeProvider value={settings.theme}>
         <Scanner settings={settings} onChangeSettings={changeSettings} />
+        {!STORE_SCENE && <SplashOverlay />}
       </ThemeProvider>
     </SafeAreaProvider>
   );

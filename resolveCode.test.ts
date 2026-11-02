@@ -7,6 +7,7 @@ import {
   getSetName,
   resolveCode,
   resolveScan,
+  scannedCode,
 } from './resolveCode';
 
 const SET_IDS = Object.keys(SETS);
@@ -130,4 +131,15 @@ describe('resolve code', () => {
       ),
     );
   });
+});
+
+test('A box code is the 7 digits before the batch data', () => {
+  expect(scannedCode(' 9900101 2401 ')).toBe('9900101');
+  expect(scannedCode('9900101')).toBe('9900101');
+});
+
+test('Anything else in a data matrix is no box code', () => {
+  expect(scannedCode('https://example.test')).toBeUndefined();
+  expect(scannedCode('123456 2401')).toBeUndefined();
+  expect(scannedCode(undefined)).toBeUndefined();
 });

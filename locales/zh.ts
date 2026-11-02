@@ -64,6 +64,18 @@ const zh: Translation = {
     current: '已是最新',
     updated: '已更新',
     failed: '更新失败，请稍后再试。',
+    looking: '正在查找新人仔…',
+    updating: '正在加载新人仔…',
+    arrived: '新人仔已到',
+    lookupFailed: '无法加载新人仔，请稍后再试。',
+  },
+  lookup: {
+    looking: '正在查找这个人仔…',
+    searching: '目录中还没有代码 {{code}}，正在查找新人仔。',
+    unknown: '未知人仔',
+    notInCatalog: '目录中还没有代码 {{code}}。',
+    failed: '无法查找新人仔，请稍后再试。',
+    notABox: '这不是人仔包装',
   },
   layouts: {
     card: {

@@ -34,6 +34,20 @@ const publish = args.includes('--publish');
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 
+// One line that redraws in a terminal; in a log (CI), every 25%.
+const tty = process.stdout.isTTY;
+function progress(label, done, total) {
+  const width = 24;
+  const filled = Math.round((done / total) * width);
+  const bar = `[${'#'.repeat(filled)}${'.'.repeat(width - filled)}]`;
+  const line = `${label} ${bar} ${done}/${total}`;
+  if (tty) {
+    process.stdout.write(`\r${line}${done === total ? '\n' : ''}`);
+  } else if (done === total || done % Math.ceil(total / 4) === 0) {
+    console.log(line);
+  }
+}
+
 /** Width and height from a WebP (lossy, lossless or extended) or PNG header. */
 function imageSize(buffer) {
   if (buffer.toString('ascii', 1, 4) === 'PNG') {
@@ -102,6 +116,10 @@ fs.rmSync(out, {recursive: true, force: true});
 fs.mkdirSync(out, {recursive: true});
 
 const images = {};
+const figureCount = Object.values(sets).reduce(
+  (count, figures) => count + Object.keys(figures).length,
+  0,
+);
 for (const figures of Object.values(sets)) {
   for (const [title, codes] of Object.entries(figures)) {
     const code = String(codes[0]);
@@ -117,6 +135,7 @@ for (const figures of Object.values(sets)) {
       sha256: createHash('sha256').update(buffer).digest('hex'),
       ...imageSize(buffer),
     };
+    progress('Preparing images', Object.keys(images).length, figureCount);
   }
 }
 
@@ -131,13 +150,26 @@ console.log(
 );
 
 if (publish) {
-  const gh = (...params) =>
-    execFileSync('gh', [...params, '--repo', REPO], {stdio: 'inherit'});
+  // Quiet, so the progress line stays readable; errors still come through.
+  const gh = (...params) => {
+    try {
+      execFileSync('gh', [...params, '--repo', REPO], {
+        stdio: ['ignore', 'ignore', 'pipe'],
+      });
+    } catch (error) {
+      if (tty) {
+        process.stdout.write('\n');
+      }
+      process.stderr.write(error.stderr ?? '');
+      throw error;
+    }
+  };
   try {
     execFileSync('gh', ['release', 'view', TAG, '--repo', REPO], {
       stdio: 'ignore',
     });
   } catch {
+    console.log(`Creating release ${TAG}`);
     gh(
       'release',
       'create',
@@ -152,8 +184,21 @@ if (publish) {
   const imageFiles = Object.values(images).map(image =>
     path.join(out, image.file),
   );
-  // Images first: catalog.json is what apps look at, so it goes up last.
-  gh('release', 'upload', TAG, ...imageFiles, '--clobber');
+  // Images first, a few at a time so the progress moves: catalog.json is what
+  // apps look at, so it goes up last.
+  const batch = 8;
+  for (let start = 0; start < imageFiles.length; start += batch) {
+    progress('Uploading images', start, imageFiles.length);
+    gh(
+      'release',
+      'upload',
+      TAG,
+      ...imageFiles.slice(start, start + batch),
+      '--clobber',
+    );
+  }
+  progress('Uploading images', imageFiles.length, imageFiles.length);
+  console.log('Uploading catalog.json');
   gh('release', 'upload', TAG, path.join(out, 'catalog.json'), '--clobber');
   console.log(`Published to https://github.com/${REPO}/releases/tag/${TAG}`);
 }

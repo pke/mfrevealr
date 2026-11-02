@@ -62,6 +62,19 @@ const en = {
     current: 'Up to date',
     updated: 'Updated',
     failed: 'Could not update. Try again later.',
+    looking: 'Looking for new figures…',
+    updating: 'Loading new figures…',
+    arrived: 'New figures are here',
+    lookupFailed: 'Could not load new figures. Try again later.',
+  },
+  lookup: {
+    looking: 'Looking for this figure…',
+    searching:
+      "Code {{code}} isn't in the catalog yet. Checking for new figures.",
+    unknown: 'Unknown figure',
+    notInCatalog: "Code {{code}} isn't in the catalog yet.",
+    failed: "Couldn't check for new figures. Try again later.",
+    notABox: 'Not a minifigure box',
   },
   layouts: {
     card: {

@@ -97,8 +97,6 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 7
         versionName "10.0.0"
-        // The test link (AndroidManifest.xml) exists only in E2E_BUILD builds.
-        manifestPlaceholders += [e2eLinks: System.getenv('E2E_BUILD') ? 'true' : 'false']
     }
     androidResources {
         // Only English strings ship; keeps AndroidX/Compose locales out of resources.arsc.
@@ -128,16 +126,33 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            if (System.getenv('E2E_BUILD')) {
-                // End-to-end test builds (simulated camera) never ship: the
-                // debug key lets CI build them without the upload key.
-                signingConfig signingConfigs.debug
-            } else if (signingProperty('UPLOAD_STORE_FILE')) {
+            if (signingProperty('UPLOAD_STORE_FILE')) {
                 signingConfig signingConfigs.release
             }
             minifyEnabled enableProguardInReleaseBuilds
             shrinkResources enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+        // End-to-end tests (yarn e2e:build:android): a release build plus the
+        // test link of src/e2e/AndroidManifest.xml. It never ships, so the
+        // debug key lets CI build it without the upload key.
+        e2e {
+            initWith release
+            signingConfig signingConfigs.debug
+            matchingFallbacks = ['release']
+            // Catalog updates come from the tests' own server on the Mac
+            // (plain http), which the emulator reaches as 10.0.2.2.
+            manifestPlaceholders += [usesCleartextTraffic: 'true']
+        }
+    }
+}
+
+// E2E_BUILD bundles the simulated camera (metro.config.js); that JS belongs in
+// the e2e build type only, never in a release.
+tasks.matching { it.name == 'createBundleReleaseJsAndAssets' }.configureEach {
+    doFirst {
+        if (System.getenv('E2E_BUILD')) {
+            throw new GradleException('E2E_BUILD is set: build the e2e variant (app:assembleE2e), not a release.')
         }
     }
 }

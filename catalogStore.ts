@@ -62,6 +62,11 @@ function activate(catalog: Catalog) {
   listeners.forEach(listener => listener());
 }
 
+/** The revision of the catalog in use. */
+export function getCatalogRevision() {
+  return revision;
+}
+
 /** The revision of the catalog in use; re-renders when it changes. */
 export function useCatalogRevision() {
   return React.useSyncExternalStore(
@@ -71,6 +76,37 @@ export function useCatalogRevision() {
     },
     () => revision,
   );
+}
+
+/** How far an update is: looking for a newer catalog, or downloading it. */
+export type CatalogProgress =
+  | {phase: 'checking'}
+  | {phase: 'downloading'; done: number; total: number};
+
+let progress: CatalogProgress | undefined;
+const progressListeners = new Set<() => void>();
+
+function report(next: CatalogProgress | undefined) {
+  progress = next;
+  progressListeners.forEach(listener => listener());
+}
+
+/** The running update's progress; undefined while none runs. */
+export function getCatalogProgress() {
+  return progress;
+}
+
+/** Calls `listener` whenever the progress changes; returns the unsubscribe. */
+export function onCatalogProgress(listener: () => void) {
+  progressListeners.add(listener);
+  return () => {
+    progressListeners.delete(listener);
+  };
+}
+
+/** The running update's progress; re-renders when it changes. */
+export function useCatalogProgress() {
+  return React.useSyncExternalStore(onCatalogProgress, getCatalogProgress);
 }
 
 async function hasAllImages(catalog: Catalog) {
@@ -130,9 +166,6 @@ async function fetchCatalog() {
 
 async function downloadImage(image: CatalogImage) {
   const target = `${IMAGES_DIR}/${localName(image)}`;
-  if (await exists(target)) {
-    return;
-  }
   const part = `${target}.part`;
   const tooBig = (bytes: number, jobId: number) => {
     if (bytes > MAX_IMAGE_BYTES) {
@@ -192,12 +225,14 @@ let running: Promise<UpdateResult> | undefined;
 export function updateCatalog(): Promise<UpdateResult> {
   running ??= update().finally(() => {
     running = undefined;
+    report(undefined);
   });
   return running;
 }
 
 async function update(): Promise<UpdateResult> {
   try {
+    report({phase: 'checking'});
     const catalog = await fetchCatalog();
     if (!catalog) {
       return 'failed';
@@ -209,11 +244,20 @@ async function update(): Promise<UpdateResult> {
     // Apple's storage guidelines ask.
     await mkdir(DIR, {NSURLIsExcludedFromBackupKey: true});
     await mkdir(IMAGES_DIR, {NSURLIsExcludedFromBackupKey: true});
-    const queue = Object.values(catalog.images);
+    // Pictures an earlier catalog brought are there already.
+    const all = Object.values(catalog.images);
+    const present = await Promise.all(
+      all.map(image => exists(`${IMAGES_DIR}/${localName(image)}`)),
+    );
+    const queue = all.filter((_, index) => !present[index]);
+    const total = queue.length;
+    let done = 0;
+    report({phase: 'downloading', done, total});
     await Promise.all(
       Array.from({length: PARALLEL_DOWNLOADS}, async () => {
         for (let image = queue.pop(); image; image = queue.pop()) {
           await downloadImage(image);
+          report({phase: 'downloading', done: ++done, total});
         }
       }),
     );

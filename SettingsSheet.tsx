@@ -1,9 +1,18 @@
 import React from 'react';
-import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {
+  Animated,
+  Easing,
+  LayoutAnimation,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {appVersion} from './appVersion';
-import type {UpdateResult} from './catalogStore';
+import type {CatalogProgress, UpdateResult} from './catalogStore';
 import {LANGUAGE_NAMES, LANGUAGES, LanguagePreference} from './languages';
+import {ProgressBar} from './ProgressBar';
 import type {Layout, Settings} from './settings';
 import {Insets, Sheet} from './Sheet';
 import {ThemePreference, usePalette} from './theme';
@@ -60,12 +69,93 @@ function LayoutPreview({layout}: {layout: Layout}) {
   );
 }
 
+const TOGGLE_MS = 250;
+
+type SectionId = 'catalog' | 'appearance' | 'language' | 'layout';
+
+/**
+ * A titled group of settings. With `onToggle` it collapses to its title and
+ * `summary`, the current choice, so it can be read without opening it.
+ */
+function Section({
+  id,
+  title,
+  summary,
+  open = true,
+  onToggle,
+  children,
+}: {
+  id: SectionId;
+  title: string;
+  summary?: string;
+  open?: boolean;
+  onToggle?: () => void;
+  children: React.ReactNode;
+}) {
+  const palette = usePalette();
+  const collapsible = onToggle !== undefined;
+  const turn = React.useRef(new Animated.Value(open ? 1 : 0)).current;
+  React.useEffect(() => {
+    Animated.timing(turn, {
+      toValue: open ? 1 : 0,
+      duration: TOGGLE_MS,
+      easing: Easing.inOut(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  }, [open, turn]);
+  return (
+    <View style={styles.block}>
+      <Pressable
+        testID={`section-${id}`}
+        onPress={onToggle}
+        accessibilityRole={collapsible ? 'button' : 'header'}
+        accessibilityState={collapsible ? {expanded: open} : undefined}
+        hitSlop={4}
+        style={styles.header}>
+        <Text style={[styles.section, {color: palette.secondary}]}>
+          {title}
+        </Text>
+        {collapsible && !open && summary !== undefined && (
+          <Text
+            numberOfLines={1}
+            style={[styles.summary, {color: palette.text}]}>
+            {summary}
+          </Text>
+        )}
+        {collapsible && (
+          <Animated.Text
+            importantForAccessibility="no"
+            accessibilityElementsHidden
+            style={[
+              styles.chevron,
+              {
+                color: palette.secondary,
+                transform: [
+                  {
+                    rotate: turn.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['90deg', '-90deg'],
+                    }),
+                  },
+                ],
+              },
+            ]}>
+            ›
+          </Animated.Text>
+        )}
+      </Pressable>
+      {open && children}
+    </View>
+  );
+}
+
 export function SettingsSheet({
   visible,
   insets,
   settings,
   canReset,
   catalogRevision,
+  catalogProgress,
   onChange,
   onCheckCatalog,
   onReset,
@@ -76,6 +166,8 @@ export function SettingsSheet({
   settings: Settings;
   canReset: boolean;
   catalogRevision: number;
+  /** A catalog update running anywhere in the app. */
+  catalogProgress?: CatalogProgress;
   onChange: (change: Partial<Settings>) => void;
   onCheckCatalog: () => Promise<UpdateResult>;
   onReset: () => void;
@@ -86,10 +178,26 @@ export function SettingsSheet({
   const [catalogStatus, setCatalogStatus] = React.useState<
     'checking' | UpdateResult
   >();
+  // Collapsed until opened; stays as left while the app runs.
+  const [open, setOpen] = React.useState<ReadonlySet<SectionId>>(new Set());
+  const toggle = (id: SectionId) => () => {
+    // The section unfolds, and the sheet, sized to its content, grows with it.
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(TOGGLE_MS, 'easeInEaseOut', 'opacity'),
+    );
+    setOpen(old => {
+      const next = new Set(old);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
   const checkCatalog = () => {
     setCatalogStatus('checking');
     onCheckCatalog().then(setCatalogStatus);
   };
+  const catalogDate = t('catalog.version', {
+    date: revisionDate(catalogRevision, i18n.language),
+  });
   const languages: {value: LanguagePreference; label: string}[] = [
     {value: 'system', label: t('settings.languageSystem')},
     ...LANGUAGES.map(language => ({
@@ -103,138 +211,168 @@ export function SettingsSheet({
       insets={insets}
       title={t('settings.title')}
       onClose={onClose}>
-      <Text style={[styles.section, {color: palette.secondary}]}>
-        {t('settings.appearance')}
-      </Text>
-      <View
-        accessibilityRole="radiogroup"
-        style={[styles.segments, {backgroundColor: palette.track}]}>
-        {THEMES.map(({value, label}) => {
-          const selected = settings.theme === value;
-          return (
+      <Section
+        id="catalog"
+        title={t('catalog.title')}
+        summary={catalogDate}
+        open={open.has('catalog')}
+        onToggle={toggle('catalog')}>
+        <View style={styles.catalogBody}>
+          <View style={styles.catalog}>
+            <Text style={[styles.catalogText, {color: palette.text}]}>
+              {catalogDate}
+            </Text>
             <Pressable
-              key={value}
-              testID={`theme-${value}`}
-              onPress={() => onChange({theme: value})}
-              accessibilityRole="radio"
-              accessibilityState={{checked: selected}}
-              style={[
-                styles.segment,
-                selected && {
-                  backgroundColor: palette.surface,
-                  borderColor: palette.accent,
-                },
-              ]}>
-              <Text
-                style={[
-                  styles.segmentText,
-                  {color: palette.text},
-                  selected && styles.bold,
-                ]}>
-                {t(label)}
+              testID="catalog-check"
+              onPress={checkCatalog}
+              disabled={catalogStatus === 'checking'}
+              accessibilityRole="button"
+              accessibilityState={{busy: catalogStatus === 'checking'}}
+              hitSlop={8}>
+              <Text style={[styles.catalogButton, {color: palette.accent}]}>
+                {t('catalog.check')}
               </Text>
             </Pressable>
-          );
-        })}
-      </View>
-      <Text style={[styles.section, {color: palette.secondary}]}>
-        {t('settings.language')}
-      </Text>
-      <View accessibilityRole="radiogroup" style={styles.chips}>
-        {languages.map(({value, label}) => {
-          const selected = settings.language === value;
-          return (
-            <Pressable
-              key={value}
-              testID={`language-${value}`}
-              onPress={() => onChange({language: value})}
-              accessibilityRole="radio"
-              accessibilityState={{checked: selected}}
-              accessibilityLanguage={value === 'system' ? undefined : value}
-              style={[
-                styles.chip,
-                {borderColor: selected ? palette.accent : palette.track},
-              ]}>
-              <Text
+          </View>
+          {catalogProgress && (
+            <View style={styles.progress}>
+              <ProgressBar
+                testID="catalog-progress"
+                done={
+                  catalogProgress.phase === 'downloading'
+                    ? catalogProgress.done
+                    : undefined
+                }
+                total={
+                  catalogProgress.phase === 'downloading'
+                    ? catalogProgress.total
+                    : undefined
+                }
+              />
+            </View>
+          )}
+          {catalogStatus && (
+            <Text
+              accessibilityLiveRegion="polite"
+              style={[styles.catalogStatus, {color: palette.secondary}]}>
+              {t(`catalog.${catalogStatus}`)}
+            </Text>
+          )}
+        </View>
+      </Section>
+      <Section id="appearance" title={t('settings.appearance')}>
+        <View
+          accessibilityRole="radiogroup"
+          style={[styles.segments, {backgroundColor: palette.track}]}>
+          {THEMES.map(({value, label}) => {
+            const selected = settings.theme === value;
+            return (
+              <Pressable
+                key={value}
+                testID={`theme-${value}`}
+                onPress={() => onChange({theme: value})}
+                accessibilityRole="radio"
+                accessibilityState={{checked: selected}}
                 style={[
-                  styles.segmentText,
-                  {color: palette.text},
-                  selected && styles.bold,
+                  styles.segment,
+                  selected && {
+                    backgroundColor: palette.surface,
+                    borderColor: palette.accent,
+                  },
                 ]}>
-                {label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-      <Text style={[styles.section, {color: palette.secondary}]}>
-        {t('settings.layout')}
-      </Text>
-      <View accessibilityRole="radiogroup">
-        {LAYOUTS.map(value => {
-          const label = t(`layouts.${value}.label`);
-          const description = t(`layouts.${value}.description`);
-          const selected = settings.layout === value;
-          return (
-            <Pressable
-              key={value}
-              testID={`layout-${value}`}
-              onPress={() => onChange({layout: value})}
-              accessibilityRole="radio"
-              accessibilityState={{checked: selected}}
-              accessibilityLabel={`${label}. ${description}`}
-              style={[
-                styles.option,
-                {borderColor: selected ? palette.accent : palette.track},
-              ]}>
-              <LayoutPreview layout={value} />
-              <View style={styles.optionText}>
-                <Text style={[styles.optionLabel, {color: palette.text}]}>
-                  {label}
-                </Text>
                 <Text
                   style={[
-                    styles.optionDescription,
-                    {color: palette.secondary},
+                    styles.segmentText,
+                    {color: palette.text},
+                    selected && styles.bold,
                   ]}>
-                  {description}
+                  {t(label)}
                 </Text>
-              </View>
-              {selected && (
-                <Text style={[styles.check, {color: palette.accent}]}>✓</Text>
-              )}
-            </Pressable>
-          );
-        })}
-      </View>
-      <Text style={[styles.section, {color: palette.secondary}]}>
-        {t('catalog.title')}
-      </Text>
-      <View style={styles.catalog}>
-        <Text style={[styles.catalogText, {color: palette.text}]}>
-          {t('catalog.version', {
-            date: revisionDate(catalogRevision, i18n.language),
+              </Pressable>
+            );
           })}
-        </Text>
-        <Pressable
-          testID="catalog-check"
-          onPress={checkCatalog}
-          disabled={catalogStatus === 'checking'}
-          accessibilityRole="button"
-          accessibilityState={{busy: catalogStatus === 'checking'}}
-          hitSlop={8}>
-          <Text style={[styles.catalogButton, {color: palette.accent}]}>
-            {t('catalog.check')}
-          </Text>
-        </Pressable>
-      </View>
-      {catalogStatus && (
-        <Text
-          accessibilityLiveRegion="polite"
-          style={[styles.catalogStatus, {color: palette.secondary}]}>
-          {t(`catalog.${catalogStatus}`)}
-        </Text>
-      )}
+        </View>
+      </Section>
+      <Section
+        id="language"
+        title={t('settings.language')}
+        summary={
+          languages.find(({value}) => value === settings.language)?.label
+        }
+        open={open.has('language')}
+        onToggle={toggle('language')}>
+        <View accessibilityRole="radiogroup" style={styles.chips}>
+          {languages.map(({value, label}) => {
+            const selected = settings.language === value;
+            return (
+              <Pressable
+                key={value}
+                testID={`language-${value}`}
+                onPress={() => onChange({language: value})}
+                accessibilityRole="radio"
+                accessibilityState={{checked: selected}}
+                accessibilityLanguage={value === 'system' ? undefined : value}
+                style={[
+                  styles.chip,
+                  {borderColor: selected ? palette.accent : palette.track},
+                ]}>
+                <Text
+                  style={[
+                    styles.segmentText,
+                    {color: palette.text},
+                    selected && styles.bold,
+                  ]}>
+                  {label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </Section>
+      <Section
+        id="layout"
+        title={t('settings.layout')}
+        summary={t(`layouts.${settings.layout}.label`)}
+        open={open.has('layout')}
+        onToggle={toggle('layout')}>
+        <View accessibilityRole="radiogroup">
+          {LAYOUTS.map(value => {
+            const label = t(`layouts.${value}.label`);
+            const description = t(`layouts.${value}.description`);
+            const selected = settings.layout === value;
+            return (
+              <Pressable
+                key={value}
+                testID={`layout-${value}`}
+                onPress={() => onChange({layout: value})}
+                accessibilityRole="radio"
+                accessibilityState={{checked: selected}}
+                accessibilityLabel={`${label}. ${description}`}
+                style={[
+                  styles.option,
+                  {borderColor: selected ? palette.accent : palette.track},
+                ]}>
+                <LayoutPreview layout={value} />
+                <View style={styles.optionText}>
+                  <Text style={[styles.optionLabel, {color: palette.text}]}>
+                    {label}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.optionDescription,
+                      {color: palette.secondary},
+                    ]}>
+                    {description}
+                  </Text>
+                </View>
+                {selected && (
+                  <Text style={[styles.check, {color: palette.accent}]}>✓</Text>
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+      </Section>
       {canReset && (
         <Pressable
           testID="settings-start-over"
@@ -260,13 +398,33 @@ export function SettingsSheet({
 const PREVIEW_CAMERA = '#48484A';
 
 const styles = StyleSheet.create({
+  block: {
+    marginBottom: 8,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 44,
+  },
   section: {
     fontSize: 13,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginTop: 8,
-    marginBottom: 8,
+  },
+  summary: {
+    flex: 1,
+    textAlign: 'right',
+    fontSize: 15,
+  },
+  chevron: {
+    marginLeft: 'auto',
+    fontSize: 22,
+    lineHeight: 24,
+  },
+  progress: {
+    marginTop: 10,
   },
   segments: {
     flexDirection: 'row',
@@ -287,6 +445,9 @@ const styles = StyleSheet.create({
   },
   bold: {
     fontWeight: '700',
+  },
+  catalogBody: {
+    paddingBottom: 12,
   },
   catalog: {
     flexDirection: 'row',

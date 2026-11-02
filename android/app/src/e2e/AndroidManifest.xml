@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- The e2e build type (app:assembleE2e) only; releases never see this. -->
+
+    <!-- The same permissions as a release (src/release/AndroidManifest.xml). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
+
+    <application>
+        <!-- Tests feed scans in through this link (e2e/app/fakeCamera.tsx). -->
+        <activity-alias
+            android:name=".E2ELinks"
+            android:targetActivity=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="mfrevealr-e2e" />
+            </intent-filter>
+        </activity-alias>
+    </application>
+</manifest>

@@ -65,6 +65,20 @@ const it: Translation = {
     current: 'Già aggiornato',
     updated: 'Aggiornato',
     failed: 'Aggiornamento non riuscito. Riprova più tardi.',
+    looking: 'Ricerca di nuove minifigure…',
+    updating: 'Caricamento delle nuove minifigure…',
+    arrived: 'Sono arrivate nuove minifigure',
+    lookupFailed:
+      'Impossibile caricare le nuove minifigure. Riprova più tardi.',
+  },
+  lookup: {
+    looking: 'Ricerca di questa minifigure…',
+    searching:
+      'Il codice {{code}} non è ancora nel catalogo. Ricerca di nuove minifigure.',
+    unknown: 'Minifigure sconosciuta',
+    notInCatalog: 'Il codice {{code}} non è ancora nel catalogo.',
+    failed: 'Impossibile cercare nuove minifigure. Riprova più tardi.',
+    notABox: 'Non è una confezione di minifigure',
   },
   layouts: {
     card: {

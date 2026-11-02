@@ -1,14 +1,7 @@
-import BUNDLED from './images/sets/revision.json';
+import {BUNDLED, CATALOG_URL} from './catalogSource';
 import type {Sets, Series} from './resolveCode';
 
-/**
- * The catalog of series, figures and their images can be updated without an
- * app release: it is published as the assets of one GitHub release, with
- * catalog.json listing everything else in it.
- */
-export const CATALOG_REPO = 'pke/mfrevealr';
-export const CATALOG_TAG = 'catalog';
-export const CATALOG_URL = `https://github.com/${CATALOG_REPO}/releases/download/${CATALOG_TAG}/`;
+export {CATALOG_URL};
 export const CATALOG_FORMAT = 1;
 
 /** Revision of the catalog built into the app, as yyyyMMddHHmm in UTC. */

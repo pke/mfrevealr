@@ -4,11 +4,15 @@ const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
 // Screenshot builds (scripts/store-screenshots.mjs) stage scenes for the App
 // Store; every other build gets the empty storeScene.ts.
 const SCENE = path.join(__dirname, 'screenshots/scene.ts');
-// End-to-end test builds swap the camera for one that tests feed codes into.
-const FAKE_CAMERA = path.join(__dirname, 'e2e/app/fakeCamera.tsx');
+// End-to-end test builds swap the camera for one that tests feed codes into,
+// and the catalog for an older one that updates from the tests' own server.
+const E2E_SWAPS = {
+  './fakeCamera': path.join(__dirname, 'e2e/app/fakeCamera.tsx'),
+  './catalogSource': path.join(__dirname, 'e2e/app/catalogSource.ts'),
+};
 const SWAPS = {
   ...(process.env.STORE_SCREENSHOTS ? {'./storeScene': SCENE} : {}),
-  ...(process.env.E2E_BUILD ? {'./fakeCamera': FAKE_CAMERA} : {}),
+  ...(process.env.E2E_BUILD ? E2E_SWAPS : {}),
 };
 
 /**

@@ -9,6 +9,10 @@ export const BOX = {
   sprite: '6472862 2401',
   goatherd: '6472863 2401',
   blacktron: '6484685 2401', // Series 26 Space
+  // Shrek Series: missing from the catalog test builds come with.
+  thelonious: '6634903 2401',
+  // Only in the 'next' catalog of e2e/catalogServer.ts.
+  testPilot: '9999901 2401',
 };
 
 /** Every figure code of Series 25, in catalog order. */
@@ -45,6 +49,20 @@ export const test = base.extend<{fresh: void}>({
     await provide();
   },
 });
+
+/**
+ * A physical iPhone, which can't reach the catalog server on the Mac as
+ * localhost the way simulators and emulators do.
+ */
+export const onPhysicalDevice = (device: Device) =>
+  device.unstable_raw.session.startsWith('e2e-iphone-');
+
+/**
+ * Waits out the splash that opens every launch (SplashOverlay.tsx). Only
+ * screenshots need it: it hides nothing from the accessibility tree.
+ */
+export const splashGone = () =>
+  new Promise(resolve => setTimeout(resolve, 1600));
 
 /** Holds a box up to the simulated camera. */
 export async function scan(device: Device, value: string) {

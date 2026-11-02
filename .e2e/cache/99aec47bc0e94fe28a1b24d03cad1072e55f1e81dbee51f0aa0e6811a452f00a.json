@@ -1,6 +1,6 @@
 {
   "schemaVersion": "trace-1",
-  "createdAt": "2026-11-02T14:43:09.938Z",
+  "createdAt": "2026-11-02T15:33:40.509Z",
   "payload": {
     "actions": [
       {
@@ -12,6 +12,17 @@
           "testId": "settings-button",
           "selector": "id=settings-button",
           "within": "Simulated camera"
+        }
+      },
+      {
+        "name": "tap",
+        "summary": "tap button \"LANGUAGE, System\" in \"Settings\"",
+        "target": {
+          "role": "button",
+          "name": "LANGUAGE, System",
+          "testId": "section-language",
+          "selector": "id=section-language",
+          "within": "Settings"
         }
       },
       {
@@ -42,7 +53,7 @@
       "provider": "anthropic.messages",
       "model": "claude-sonnet-5-5"
     },
-    "summary": "Opened Settings and selected Español. The language radio is checked, and the Settings sheet and scan screen now show Spanish text (Ajustes, Escanea una caja, Linterna). \"Simulated camera\" stays in English.",
+    "summary": "Opened Language in Settings and chose Español. The UI is now in Spanish: \"Ajustes\", \"IDIOMA\", \"Escanea una caja\", \"Linterna\". The Español radio is checked.",
     "startPath": "dev.dudesoft.mfrevealr.app",
     "endPath": "dev.dudesoft.mfrevealr.app",
     "endAnchors": [
@@ -60,23 +71,23 @@
       },
       {
         "role": "text",
+        "name": "CATÁLOGO"
+      },
+      {
+        "role": "text",
+        "name": "Figuras a fecha de 1 ene 2026"
+      },
+      {
+        "role": "text",
+        "name": "›"
+      },
+      {
+        "role": "text",
         "name": "APARIENCIA"
       },
       {
         "role": "text",
         "name": "Sistema"
-      },
-      {
-        "role": "text",
-        "name": "Claro"
-      },
-      {
-        "role": "text",
-        "name": "Oscuro"
-      },
-      {
-        "role": "text",
-        "name": "IDIOMA"
       }
     ],
     "goneAnchors": [
@@ -103,7 +114,7 @@
         "testId": "torch-button"
       }
     ],
-    "endWaitMs": 13248,
+    "endWaitMs": 12877,
     "keyedBy": {
       "cacheSchema": "trace-1",
       "policyVersion": "conservative/6",

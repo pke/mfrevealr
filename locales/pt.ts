@@ -66,6 +66,20 @@ const pt: Translation = {
     current: 'Já está atualizado',
     updated: 'Atualizado',
     failed: 'Não foi possível atualizar. Tente mais tarde.',
+    looking: 'Procurando figuras novas…',
+    updating: 'Carregando figuras novas…',
+    arrived: 'Chegaram figuras novas',
+    lookupFailed:
+      'Não foi possível carregar as figuras novas. Tente mais tarde.',
+  },
+  lookup: {
+    looking: 'Procurando esta figura…',
+    searching:
+      'O código {{code}} ainda não está no catálogo. Procurando figuras novas.',
+    unknown: 'Figura desconhecida',
+    notInCatalog: 'O código {{code}} ainda não está no catálogo.',
+    failed: 'Não foi possível procurar figuras novas. Tente mais tarde.',
+    notABox: 'Não é uma embalagem de minifigura',
   },
   layouts: {
     card: {

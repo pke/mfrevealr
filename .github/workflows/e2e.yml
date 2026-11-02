@@ -100,9 +100,10 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      # E2E_BUILD bundles the simulated camera and signs with the debug key.
+      # The e2e build type: a release with the test link, signed with the
+      # debug key; E2E_BUILD bundles the simulated camera.
       - name: Build the APK
-        run: ./gradlew app:assembleRelease
+        run: ./gradlew app:assembleE2e
         working-directory: android
         env:
           E2E_BUILD: 1

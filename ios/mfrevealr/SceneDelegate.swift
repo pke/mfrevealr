@@ -36,6 +36,22 @@ class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate
     )
   }
 
+  // The launch screen stays up until the app draws its first frame, which
+  // shows it once more (SplashOverlay.tsx) and then hands over to the camera.
+  override func customize(_ rootView: RCTRootView) {
+    super.customize(rootView)
+    guard
+      let launch = UIStoryboard(name: "LaunchScreen", bundle: nil)
+        .instantiateInitialViewController()?.view
+    else {
+      return
+    }
+    rootView.backgroundColor = launch.backgroundColor
+    rootView.loadingView = launch
+    rootView.loadingViewFadeDelay = 0
+    rootView.loadingViewFadeDuration = 0
+  }
+
   func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
     RCTLinkingManager.scene(scene, openURLContexts: URLContexts)
   }

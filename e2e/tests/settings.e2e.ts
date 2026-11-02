@@ -9,11 +9,9 @@ test('the settings sheet shows the app version', async ({screen}) => {
   await expect(screen.getByTestId('app-version')).toBeHidden();
 });
 
-test('the split checklist shows the whole series', async ({
-  device,
-  screen,
-}) => {
+test('the split checklist shows the whole series', async ({device, screen}) => {
   await screen.getByTestId('settings-button').tap();
+  await screen.getByTestId('section-layout').tap();
   await screen.getByTestId('layout-split').tap();
   await expect(screen.getByTestId('layout-split')).toBeChecked();
   await screen.getByTestId('sheet-close').tap();
@@ -28,6 +26,7 @@ test('the slim strip shows the series as thumbnails', async ({
   screen,
 }) => {
   await screen.getByTestId('settings-button').tap();
+  await screen.getByTestId('section-layout').tap();
   await screen.getByTestId('layout-strip').tap();
   await screen.getByTestId('sheet-close').tap();
 
@@ -38,6 +37,7 @@ test('the slim strip shows the series as thumbnails', async ({
 
 test('the language can be picked in the app', async ({screen}) => {
   await screen.getByTestId('settings-button').tap();
+  await screen.getByTestId('section-language').tap();
   await screen.getByTestId('language-de').tap();
   await expect(screen.getByTestId('language-de')).toBeChecked();
   await expect(
@@ -46,6 +46,18 @@ test('the language can be picked in the app', async ({screen}) => {
 
   await screen.getByTestId('language-system').tap();
   await expect(screen.getByRole('button', 'Close Settings')).toBeVisible();
+});
+
+test('settings sections other than appearance fold away', async ({screen}) => {
+  await screen.getByTestId('settings-button').tap();
+  const language = screen.getByTestId('section-language');
+  await expect(language).toContainText('System');
+  await expect(screen.getByTestId('language-de')).toBeHidden();
+  await language.tap();
+  await expect(screen.getByTestId('language-de')).toBeVisible();
+  await language.tap();
+  await expect(screen.getByTestId('language-de')).toBeHidden();
+  await expect(screen.getByTestId('theme-dark')).toBeVisible();
 });
 
 test('the appearance can be picked in the app', async ({screen}) => {

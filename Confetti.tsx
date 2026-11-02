@@ -7,6 +7,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import {celebrate} from './haptics';
 
 // A confetti explosion for a completed series: a few glints twinkle, and
 // confetti and two paper snakes shoot up and out like from a cannon. Air
@@ -33,6 +34,8 @@ const GOLD = '#ffe9a8';
 // bottom; whatever is still in view fades out over the final moments.
 const DURATION = 5600;
 const FADE = 0.6; // seconds
+// The phone thumps with the bang, after the warm-up below.
+const BANG_DELAY = 250;
 const COUNT = 120;
 const GLINTS = 10;
 const GRAVITY = 600; // points/s², on an 874 pt tall screen
@@ -51,8 +54,7 @@ const seconds = (step: number) => (step * DURATION) / 1000;
 const fadingOut = (step: number) =>
   Math.min(1, (DURATION / 1000 - seconds(step)) / FADE);
 
-const between = (min: number, max: number) =>
-  min + Math.random() * (max - min);
+const between = (min: number, max: number) => min + Math.random() * (max - min);
 const pick = <T,>(items: T[]) =>
   items[Math.floor(Math.random() * items.length)];
 
@@ -140,11 +142,7 @@ function makePiece(scale: number): Piece {
     track.spin.push(`${spinRate * t}deg`);
     track.flip.push(`${flipPhase + flipRate * t}deg`);
     track.scale.push(Math.min(1, 0.2 + (t / 0.09) * 0.8));
-    track.opacity.push(
-      step < HIDDEN_UNTIL
-        ? 0
-        : alpha * fadingOut(step),
-    );
+    track.opacity.push(step < HIDDEN_UNTIL ? 0 : alpha * fadingOut(step));
   }
   return {style: pieceStyle(depth), track};
 }
@@ -212,7 +210,8 @@ function makeSnake(scale: number, side: number, width: number) {
       const here = head(t);
       const ahead = head(t + 0.004);
       const behind = head(t - SNAKE_LAG);
-      let degrees = (Math.atan2(ahead.y - here.y, ahead.x - here.x) * 180) / Math.PI;
+      let degrees =
+        (Math.atan2(ahead.y - here.y, ahead.x - here.x) * 180) / Math.PI;
       // Keep turning the short way round, never back through 360°.
       if (last !== undefined) {
         degrees += Math.round((last - degrees) / 360) * 360;
@@ -228,9 +227,7 @@ function makeSnake(scale: number, side: number, width: number) {
       track.twist.push(
         0.3 + 0.7 * Math.abs(Math.cos(t * twistRate + segment * 0.35)),
       );
-      track.opacity.push(
-        t <= 0 ? 0 : fadingOut(step),
-      );
+      track.opacity.push(t <= 0 ? 0 : fadingOut(step));
     }
     return track;
   });
@@ -289,29 +286,28 @@ export function Confetti() {
       }),
       snakes: Array.from({length: SNAKES}, (_, index) => {
         const colors = PALETTE.filter(color => color !== '#ffffff');
-        const color = colors[(index * 3 + Math.floor(Math.random() * 3)) % colors.length];
-        return makeSnake(height / 874, index % 2 ? 1 : -1, width).map(
-          track => {
-            const snakeAlong = <T extends number | string>(values: T[]) =>
-              progress.interpolate<T>({
-                inputRange: SNAKE_STEPS,
-                outputRange: values,
-              });
-            return {
-              color,
-              animated: {
-                opacity: snakeAlong(track.opacity),
-                transform: [
-                  {translateX: snakeAlong(track.x)},
-                  {translateY: snakeAlong(track.y)},
-                  {rotate: snakeAlong(track.angle)},
-                  {scaleX: snakeAlong(track.stretch)},
-                  {scaleY: snakeAlong(track.twist)},
-                ],
-              },
-            };
-          },
-        );
+        const color =
+          colors[(index * 3 + Math.floor(Math.random() * 3)) % colors.length];
+        return makeSnake(height / 874, index % 2 ? 1 : -1, width).map(track => {
+          const snakeAlong = <T extends number | string>(values: T[]) =>
+            progress.interpolate<T>({
+              inputRange: SNAKE_STEPS,
+              outputRange: values,
+            });
+          return {
+            color,
+            animated: {
+              opacity: snakeAlong(track.opacity),
+              transform: [
+                {translateX: snakeAlong(track.x)},
+                {translateY: snakeAlong(track.y)},
+                {rotate: snakeAlong(track.angle)},
+                {scaleX: snakeAlong(track.stretch)},
+                {scaleY: snakeAlong(track.twist)},
+              ],
+            },
+          };
+        });
       }),
       pieces: Array.from({length: COUNT}, () => {
         const {style, track} = makePiece(height / 874);
@@ -348,10 +344,14 @@ export function Confetti() {
       easing: Easing.linear,
       useNativeDriver: true,
     });
-    Animated.sequence([warmUp, Animated.delay(250), animation]).start(
+    Animated.sequence([warmUp, Animated.delay(BANG_DELAY), animation]).start(
       ({finished}) => finished && setDone(true),
     );
-    return () => progress.stopAnimation();
+    const bang = setTimeout(celebrate, BANG_DELAY);
+    return () => {
+      clearTimeout(bang);
+      progress.stopAnimation();
+    };
   }, [progress]);
 
   if (done) {
