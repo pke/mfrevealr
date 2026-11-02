@@ -56,6 +56,9 @@ const it: Translation = {
     languageSystem: 'Sistema',
     light: 'Chiaro',
     dark: 'Scuro',
+    codeOverlay: 'Minifigure sui codici',
+    codeOverlayDescription:
+      'Mostra l’immagine di ogni minifigure sul codice della sua confezione nella fotocamera.',
   },
   catalog: {
     title: 'Catalogo',

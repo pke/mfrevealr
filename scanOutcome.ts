@@ -4,8 +4,8 @@ import type {createSightings} from './sightings';
 type Entry = NonNullable<ReturnType<typeof resolveScan>>;
 
 export type ScanOutcome =
-  // A box the catalog knows: reveal its figure.
-  | {kind: 'figure'; entry: Entry}
+  // Boxes the catalog knows: reveal their figures, every one new in view.
+  | {kind: 'figures'; entries: Entry[]}
   // A box the catalog lacks: a newer catalog may know it.
   | {kind: 'unknown'; value: string}
   // A code that is no box, from any other product.
@@ -14,8 +14,8 @@ export type ScanOutcome =
 /**
  * What a camera frame's codes mean, or undefined when nothing in it is new.
  * Every code is recorded in `sightings`, so one that stays in view counts
- * only once and two in view don't take turns; `deliberate` scans (one code
- * held up on purpose, by the test camera) count every time.
+ * only once and two in view don't take turns; `deliberate` scans (codes held
+ * up on purpose, by the test camera) count every time.
  */
 export function classifyScan(
   values: (string | undefined)[],
@@ -44,7 +44,7 @@ export function classifyScan(
     }
   }
   if (known.length) {
-    return {kind: 'figure', entry: known[0]};
+    return {kind: 'figures', entries: known};
   }
   if (unknown.length) {
     return {kind: 'unknown', value: unknown[0]};

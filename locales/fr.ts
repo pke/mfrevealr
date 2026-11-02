@@ -55,6 +55,9 @@ const fr: Translation = {
     languageSystem: 'Système',
     light: 'Clair',
     dark: 'Sombre',
+    codeOverlay: 'Figurines sur les codes',
+    codeOverlayDescription:
+      'Affiche l’image de chaque figurine sur le code de sa boîte dans la caméra.',
   },
   catalog: {
     title: 'Catalogue',

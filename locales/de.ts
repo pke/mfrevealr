@@ -56,6 +56,9 @@ const de: Translation = {
     languageSystem: 'System',
     light: 'Hell',
     dark: 'Dunkel',
+    codeOverlay: 'Figuren auf den Codes',
+    codeOverlayDescription:
+      'Zeigt das Bild jeder Figur direkt auf dem Code ihrer Packung in der Kamera.',
   },
   catalog: {
     title: 'Katalog',

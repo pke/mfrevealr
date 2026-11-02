@@ -126,3 +126,29 @@ test('While checking, the progress bar runs without a count', () => {
   expect(bar.props.accessibilityValue).toBeUndefined();
   expect(bar.props.accessibilityState).toEqual({busy: true});
 });
+
+test('Figures on the box codes switch on in the layout section', () => {
+  const changes: object[] = [];
+  let tree!: renderer.ReactTestRenderer;
+  act(() => {
+    tree = renderer.create(
+      <SettingsSheet
+        visible
+        insets={{top: 0, bottom: 0}}
+        settings={DEFAULT_SETTINGS}
+        canReset={false}
+        catalogRevision={202611020000}
+        onChange={change => changes.push(change)}
+        onCheckCatalog={async () => 'current'}
+        onReset={() => {}}
+        onClose={() => {}}
+      />,
+    );
+  });
+  expect(byId(tree, 'setting-code-overlay')).toBeUndefined();
+  tap(tree, 'section-layout');
+  const toggle = byId(tree, 'setting-code-overlay')!;
+  expect(toggle.props.value).toBe(false);
+  act(() => toggle.props.onValueChange(true));
+  expect(changes).toEqual([{codeOverlay: true}]);
+});

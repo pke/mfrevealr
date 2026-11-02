@@ -12,13 +12,13 @@ import {
   Linking,
   PanResponder,
   PixelRatio,
+  Platform,
   Pressable,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   useWindowDimensions,
-  Vibration,
   View,
 } from 'react-native';
 import type {ScrollViewInstance} from 'react-native';
@@ -30,6 +30,7 @@ import {
 import {
   Camera,
   Code,
+  CodeScannerFrame,
   useCameraDevice,
   useCameraPermission,
   useCodeScanner,
@@ -46,7 +47,9 @@ import {
   useCatalogRevision,
 } from './catalogStore';
 import {CatalogNotice, createCatalogUpdates} from './catalogUpdates';
-import {refuse} from './haptics';
+import {LiveCodeMarkers} from './CodeMarkers';
+import {codeToView, createMarkers, Marker} from './codeOverlay';
+import {foundNew, refuse} from './haptics';
 import i18n from './i18n';
 import {resolveLanguage} from './languages';
 import {phoneLocale} from './languageSync';
@@ -102,12 +105,6 @@ function useAppIsActive() {
     return () => subscription.remove();
   }, []);
   return active;
-}
-
-function vibrate() {
-  try {
-    Vibration.vibrate([0, 50, 100, 50]);
-  } catch {}
 }
 
 function PermissionDenied({onRequest}: {onRequest: () => void}) {
@@ -1222,7 +1219,7 @@ function Scanner({
     });
   }, []);
 
-  // `deliberate` scans (the test camera) are one box held up on purpose, so
+  // `deliberate` scans (the test camera) are boxes held up on purpose, so
   // they count even when the same box was seen just before.
   const onScan = (values: (string | undefined)[], deliberate = false) => {
     // Recorded also behind a sheet, so a box that stays in view never counts
@@ -1241,23 +1238,40 @@ function Scanner({
       return;
     }
     setLookup(undefined);
-    const {code, setId} = outcome.entry;
-    let isNew = true;
-    if (setId !== currentSetIdRef.current) {
-      // A box from another series starts a new collection.
-      currentSetIdRef.current = setId;
-      figuresRef.current = new Set([code]);
-      setCurrentSetId(setId);
-    } else if (!figuresRef.current.has(code)) {
-      figuresRef.current = new Set(figuresRef.current).add(code);
-    } else {
-      isNew = false;
+    // Every new box in view counts. A box from another series starts a new
+    // collection, but not while one of the current series is in view too.
+    const current = outcome.entries.filter(
+      entry => entry.setId === currentSetIdRef.current,
+    );
+    const entries = current.length
+      ? current
+      : outcome.entries.filter(
+          entry => entry.setId === outcome.entries[0].setId,
+        );
+    let shown: Scan | undefined;
+    let newlyFound = 0;
+    for (const {code, setId} of entries) {
+      let isNew = true;
+      if (setId !== currentSetIdRef.current) {
+        currentSetIdRef.current = setId;
+        figuresRef.current = new Set([code]);
+        setCurrentSetId(setId);
+      } else if (!figuresRef.current.has(code)) {
+        figuresRef.current = new Set(figuresRef.current).add(code);
+      } else {
+        isNew = false;
+      }
+      newlyFound += isNew ? 1 : 0;
+      // The card shows a new figure if there is one.
+      if (!shown || (isNew && !shown.isNew)) {
+        shown = {code, isNew};
+      }
     }
-    if (isNew) {
+    if (newlyFound) {
       setFiguresInSet(figuresRef.current);
-      vibrate();
+      foundNew(newlyFound);
     }
-    setLastScan({code, isNew});
+    setLastScan(shown);
   };
 
   const onScanRef = React.useRef(onScan);
@@ -1285,9 +1299,41 @@ function Scanner({
     });
   };
 
+  // Figures drawn on their box codes (settings.codeOverlay). The markers
+  // follow the tracker by themselves, so readings don't re-render the app.
+  const markers = React.useRef(createMarkers()).current;
+  const cameraSize = React.useRef({width: 0, height: 0});
+  const codeOverlayRef = React.useRef(settings.codeOverlay);
+  codeOverlayRef.current = settings.codeOverlay;
+  const placeMarkers = (codes: Code[], frame: CodeScannerFrame) => {
+    if (!codeOverlayRef.current) {
+      return;
+    }
+    const seen: Marker[] = [];
+    for (const code of codes) {
+      const entry = resolveScan(code.value);
+      const rect =
+        entry &&
+        code.frame &&
+        codeToView(code.frame, frame, cameraSize.current, Platform.OS);
+      if (entry && rect) {
+        seen.push({code: entry.code, rect});
+      }
+    }
+    markers.see(seen, Date.now());
+  };
+  React.useEffect(() => {
+    if (!settings.codeOverlay) {
+      markers.clear();
+    }
+  }, [settings.codeOverlay, markers]);
+
   const codeScanner = useCodeScanner({
     codeTypes: ['data-matrix'],
-    onCodeScanned: (codes: Code[]) => onScan(codes.map(code => code.value)),
+    onCodeScanned: (codes: Code[], frame: CodeScannerFrame) => {
+      placeMarkers(codes, frame);
+      onScan(codes.map(code => code.value));
+    },
   });
 
   React.useEffect(() => {
@@ -1349,7 +1395,12 @@ function Scanner({
   // Switching layouts moves the camera, which restarts its session; that only
   // happens from the settings sheet.
   const camera = (
-    <View style={StyleSheet.absoluteFill} onTouchEnd={focus}>
+    <View
+      style={StyleSheet.absoluteFill}
+      onTouchEnd={focus}
+      onLayout={event => {
+        cameraSize.current = event.nativeEvent.layout;
+      }}>
       {scene ? (
         <Image
           source={scene.photo}
@@ -1357,7 +1408,7 @@ function Scanner({
           resizeMode="cover"
         />
       ) : FakeCamera ? (
-        <FakeCamera onScan={value => onScan([value], true)} />
+        <FakeCamera onScan={values => onScan(values, true)} />
       ) : device ? (
         <Camera
           device={device}
@@ -1374,6 +1425,9 @@ function Scanner({
         />
       ) : (
         <Text style={styles.noCamera}>{t('camera.unavailable')}</Text>
+      )}
+      {settings.codeOverlay && !seriesOpen && !settingsOpen && (
+        <LiveCodeMarkers markers={markers} found={figuresInSet} />
       )}
       {/* The status bar is always light; this keeps it legible over a
           bright camera image, like a white wall or a lit shelf. */}

@@ -1,4 +1,4 @@
-import {BOX, expect, scan, test} from '../support';
+import {BOX, expect, scan, SERIES_25, test} from '../support';
 
 test('before the first box, the card explains what to scan', async ({
   screen,
@@ -26,6 +26,15 @@ test('each new box of the series adds to the collection', async ({
   const card = screen.getByTestId('reveal-card');
   await expect(card).toContainText('Mushroom Sprite');
   await expect(card).toContainText('2 of 12');
+});
+
+test('two boxes in view both count', async ({device, screen}) => {
+  await scan(device, BOX.fitness, BOX.sprite);
+  const card = screen.getByTestId('reveal-card');
+  await expect(card).toContainText('2 of 12');
+  await card.tap();
+  await expect(screen.getByTestId(`tile-${SERIES_25[1]}`)).toBeChecked();
+  await expect(screen.getByTestId(`tile-${SERIES_25[2]}`)).toBeChecked();
 });
 
 test('a figure found before is not counted twice', async ({device, screen}) => {

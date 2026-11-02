@@ -56,6 +56,9 @@ const ru: Translation = {
     languageSystem: 'Системный',
     light: 'Светлая',
     dark: 'Тёмная',
+    codeOverlay: 'Фигурки на кодах',
+    codeOverlayDescription:
+      'Показывает изображение каждой фигурки прямо на коде её упаковки в камере.',
   },
   catalog: {
     title: 'Каталог',

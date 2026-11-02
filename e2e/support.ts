@@ -64,9 +64,10 @@ export const onPhysicalDevice = (device: Device) =>
 export const splashGone = () =>
   new Promise(resolve => setTimeout(resolve, 1600));
 
-/** Holds a box up to the simulated camera. */
-export async function scan(device: Device, value: string) {
-  await device.openLink(`mfrevealr-e2e://scan/${encodeURIComponent(value)}`);
+/** Holds boxes up to the simulated camera, all in one frame. */
+export async function scan(device: Device, ...values: string[]) {
+  const codes = values.map(encodeURIComponent).join(',');
+  await device.openLink(`mfrevealr-e2e://scan/${codes}`);
 }
 
 export {expect};

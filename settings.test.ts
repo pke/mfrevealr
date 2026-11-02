@@ -17,7 +17,14 @@ test('Stored settings are read back', () => {
     theme: 'dark',
     layout: 'strip',
     language: 'pl',
+    codeOverlay: false,
   });
+});
+
+test('Figures on the box codes are off unless switched on', () => {
+  expect(DEFAULT_SETTINGS.codeOverlay).toBe(false);
+  expect(parseSettings('{"codeOverlay":true}').codeOverlay).toBe(true);
+  expect(parseSettings('{"codeOverlay":"yes"}').codeOverlay).toBe(false);
 });
 
 test('Unknown values are replaced one by one', () => {
@@ -27,6 +34,7 @@ test('Unknown values are replaced one by one', () => {
     theme: DEFAULT_SETTINGS.theme,
     layout: 'split',
     language: 'de',
+    codeOverlay: false,
   });
   expect(
     parseSettings('{"theme":"light","layout":42,"language":"klingon"}'),
@@ -34,5 +42,6 @@ test('Unknown values are replaced one by one', () => {
     theme: 'light',
     layout: DEFAULT_SETTINGS.layout,
     language: DEFAULT_SETTINGS.language,
+    codeOverlay: false,
   });
 });

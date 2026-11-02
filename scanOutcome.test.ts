@@ -11,7 +11,29 @@ const setup = () => createSightings(1500, () => 0);
 
 test('A known box is a figure to reveal', () => {
   const outcome = classifyScan([FITNESS], setup());
-  expect(outcome).toMatchObject({kind: 'figure', entry: {code: '6472861'}});
+  expect(outcome).toMatchObject({
+    kind: 'figures',
+    entries: [{code: '6472861'}],
+  });
+});
+
+test('Every new box in view counts, not just the first', () => {
+  const sightings = setup();
+  expect(classifyScan([FITNESS, SPRITE], sightings)).toMatchObject({
+    kind: 'figures',
+    entries: [{code: '6472861'}, {code: '6472862'}],
+  });
+  // Both stay in view: nothing new.
+  expect(classifyScan([SPRITE, FITNESS], sightings)).toBeUndefined();
+});
+
+test('A box joining one already in view counts on its own', () => {
+  const sightings = setup();
+  classifyScan([FITNESS], sightings);
+  expect(classifyScan([FITNESS, SPRITE], sightings)).toMatchObject({
+    kind: 'figures',
+    entries: [{code: '6472862'}],
+  });
 });
 
 test('A box that stays in view is nothing new', () => {
@@ -24,7 +46,7 @@ test('A box held up on purpose counts every time', () => {
   const sightings = setup();
   classifyScan([FITNESS], sightings, true);
   expect(classifyScan([FITNESS], sightings, true)).toMatchObject({
-    kind: 'figure',
+    kind: 'figures',
   });
 });
 
@@ -46,8 +68,8 @@ test('A code that is no box is ignored, once while in view', () => {
 
 test('A known box wins over others in the same frame', () => {
   expect(classifyScan([NO_BOX, UNKNOWN, SPRITE], setup())).toMatchObject({
-    kind: 'figure',
-    entry: {code: '6472862'},
+    kind: 'figures',
+    entries: [{code: '6472862'}],
   });
 });
 

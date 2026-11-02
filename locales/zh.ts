@@ -55,6 +55,9 @@ const zh: Translation = {
     languageSystem: '跟随系统',
     light: '浅色',
     dark: '深色',
+    codeOverlay: '在代码上显示人仔',
+    codeOverlayDescription:
+      '在相机画面中，把每个人仔的图片直接显示在包装代码上。',
   },
   catalog: {
     title: '目录',

@@ -53,6 +53,9 @@ const en = {
     languageSystem: 'System',
     light: 'Light',
     dark: 'Dark',
+    codeOverlay: 'Figures on the codes',
+    codeOverlayDescription:
+      "Shows each figure's picture right on its box code in the camera.",
   },
   catalog: {
     title: 'Catalog',

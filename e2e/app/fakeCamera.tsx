@@ -2,10 +2,10 @@ import React from 'react';
 import {Image, Linking, StyleSheet, Text, View} from 'react-native';
 import type {FakeCameraProps} from '../../fakeCamera';
 
-// Stands in for fakeCamera.ts in E2E_BUILD=1 builds. Tests "hold a box in
-// front of the camera" by opening mfrevealr-e2e://scan/<data-matrix value>:
-// the value goes through the app's own scan handling, as the code reader
-// would deliver it. The box photo only makes reports look like the real app.
+// Stands in for fakeCamera.ts in E2E_BUILD=1 builds. Tests "hold boxes in
+// front of the camera" by opening mfrevealr-e2e://scan/<data-matrix values>,
+// each URI-encoded, separated by commas: they go through the app's own scan
+// handling as one frame, as the code reader would deliver them. The box photo only makes reports look like the real app.
 
 const SCAN = /^mfrevealr-e2e:\/\/scan\/(.+)$/;
 
@@ -18,9 +18,9 @@ function FakeCameraView({onScan}: FakeCameraProps) {
     const receive = (url?: string | null) => {
       const match = url?.match(SCAN);
       if (match) {
-        const value = decodeURIComponent(match[1]);
-        setLast(value);
-        onScanRef.current(value);
+        const values = match[1].split(',').map(decodeURIComponent);
+        setLast(values.join(', '));
+        onScanRef.current(values);
       }
     };
     Linking.getInitialURL().then(receive);

@@ -21,6 +21,26 @@ export function celebrate() {
   } catch {}
 }
 
+// Apart enough to feel each new figure on its own.
+const FOUND_GAP_MS = 180;
+
+/** One firm tap for each figure just found, one after another. */
+export function foundNew(count: number) {
+  if (count <= 0) {
+    return;
+  }
+  try {
+    triggerPattern(
+      Array.from({length: count}, (_, index) => ({
+        time: index * FOUND_GAP_MS,
+        type: 'transient' as const,
+        intensity: 1,
+        sharpness: 0.7,
+      })),
+    );
+  } catch {}
+}
+
 /** A code the app ignores: no box, or one no catalog knows. */
 export function refuse() {
   try {

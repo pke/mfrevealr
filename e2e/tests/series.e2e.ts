@@ -8,7 +8,9 @@ test('the card opens the series with the found figures ticked', async ({
   await screen.getByTestId('reveal-card').tap();
   await expect(screen.getByTestId(`tile-${SERIES_25[1]}`)).toBeChecked();
   await expect(screen.getByTestId(`tile-${SERIES_25[0]}`)).not.toBeChecked();
-  await expect(screen.getByText('1 of 12 found · tap to tick off')).toBeVisible();
+  await expect(
+    screen.getByText('1 of 12 found · tap to tick off'),
+  ).toBeVisible();
 });
 
 test('figures can be ticked off by hand', async ({device, screen}) => {
@@ -16,7 +18,9 @@ test('figures can be ticked off by hand', async ({device, screen}) => {
   await screen.getByTestId('reveal-card').tap();
   await screen.getByTestId(`tile-${SERIES_25[3]}`).tap();
   await expect(screen.getByTestId(`tile-${SERIES_25[3]}`)).toBeChecked();
-  await expect(screen.getByText('2 of 12 found · tap to tick off')).toBeVisible();
+  await expect(
+    screen.getByText('2 of 12 found · tap to tick off'),
+  ).toBeVisible();
 
   await screen.getByTestId(`tile-${SERIES_25[3]}`).tap();
   await expect(screen.getByTestId(`tile-${SERIES_25[3]}`)).not.toBeChecked();
@@ -40,7 +44,9 @@ test('ticking off every figure completes the series', async ({
   for (const code of SERIES_25.filter(other => other !== SERIES_25[1])) {
     await screen.getByTestId(`tile-${code}`).tap();
   }
-  await expect(screen.getByText('12 of 12 found · tap to tick off')).toBeVisible();
+  await expect(
+    screen.getByText('12 of 12 found · tap to tick off'),
+  ).toBeVisible();
   await screen.getByTestId('series-close').tap();
   await expect(screen.getByTestId('reveal-card')).toContainText(
     'Series complete',

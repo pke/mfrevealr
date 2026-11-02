@@ -9,12 +9,15 @@ export type Settings = {
   theme: ThemePreference;
   layout: Layout;
   language: LanguagePreference;
+  // Each figure's picture drawn right on its box code in the camera.
+  codeOverlay: boolean;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   layout: 'card',
   language: 'system',
+  codeOverlay: false,
 };
 
 const THEMES: readonly ThemePreference[] = ['system', 'light', 'dark'];
@@ -42,6 +45,10 @@ export function parseSettings(raw: string | undefined): Settings {
     language:
       LANGUAGE_PREFERENCES.find(language => language === stored.language) ??
       DEFAULT_SETTINGS.language,
+    codeOverlay:
+      typeof stored.codeOverlay === 'boolean'
+        ? stored.codeOverlay
+        : DEFAULT_SETTINGS.codeOverlay,
   };
 }
 

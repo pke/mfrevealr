@@ -5,6 +5,7 @@ import {
   LayoutAnimation,
   Pressable,
   StyleSheet,
+  Switch,
   Text,
   View,
 } from 'react-native';
@@ -372,6 +373,25 @@ export function SettingsSheet({
             );
           })}
         </View>
+        <View style={styles.switchRow}>
+          <View style={styles.optionText}>
+            <Text style={[styles.optionLabel, {color: palette.text}]}>
+              {t('settings.codeOverlay')}
+            </Text>
+            <Text
+              style={[styles.optionDescription, {color: palette.secondary}]}>
+              {t('settings.codeOverlayDescription')}
+            </Text>
+          </View>
+          <Switch
+            testID="setting-code-overlay"
+            value={settings.codeOverlay}
+            onValueChange={codeOverlay => onChange({codeOverlay})}
+            trackColor={{true: palette.accent}}
+            accessibilityLabel={t('settings.codeOverlay')}
+            accessibilityHint={t('settings.codeOverlayDescription')}
+          />
+        </View>
       </Section>
       {canReset && (
         <Pressable
@@ -490,6 +510,13 @@ const styles = StyleSheet.create({
   optionText: {
     flex: 1,
     marginLeft: 12,
+  },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 6,
+    paddingRight: 4,
   },
   optionLabel: {
     fontSize: 16,
