@@ -45,6 +45,7 @@ test.each([
   ['a bad checksum', (c: any) => (c.images['6472860'].sha256 = 'abc')],
   ['a zero width', (c: any) => (c.images['6472860'].width = 0)],
   ['no sets at all', (c: any) => (c.sets = {})],
+  ['a figure without an image', (c: any) => delete c.images['6472860']],
 ])('A catalog with %s is rejected', (_, spoil) => {
   const catalog = valid();
   spoil(catalog);

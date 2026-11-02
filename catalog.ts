@@ -36,6 +36,10 @@ const SET_ID = /^\d{3,7}$/;
 const IMAGE_FILE = /^\d{7}\.(webp|png)$/;
 const SHA256 = /^[0-9a-f]{64}$/;
 const MAX_TEXT = 300;
+// Far above the real catalog (10 series, 116 figures): bounds what a broken
+// or tampered release can make every phone download.
+const MAX_SERIES = 500;
+const MAX_FIGURES = 5000;
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -79,6 +83,12 @@ export function parseCatalog(raw: unknown): Catalog | undefined {
     return undefined;
   }
   const {series, sets, images} = raw;
+  if (
+    Object.keys(series).length > MAX_SERIES ||
+    Object.keys(images).length > MAX_FIGURES
+  ) {
+    return undefined;
+  }
   const seriesOk = Object.entries(series).every(
     ([setId, name]) => SET_ID.test(setId) && isText(name),
   );
@@ -88,7 +98,11 @@ export function parseCatalog(raw: unknown): Catalog | undefined {
       isObject(figures) &&
       Object.keys(figures).length > 0 &&
       Object.entries(figures).every(
-        ([title, codes]) => isText(title) && isFigure(codes),
+        ([title, codes]) =>
+          isText(title) &&
+          isFigure(codes) &&
+          // Every figure comes with its picture.
+          String((codes as unknown[])[0]) in images,
       ),
   );
   const imagesOk = Object.entries(images).every(

@@ -10,6 +10,7 @@ import {
   moveFile,
   readdir,
   readFile,
+  stopDownload,
   unlink,
   writeFile,
 } from '@dr.pogodin/react-native-fs';
@@ -33,6 +34,10 @@ const IMAGES_DIR = `${DIR}/images`;
 const CATALOG_FILE = `${DIR}/catalog.json`;
 const TIMEOUT = 20_000;
 const PARALLEL_DOWNLOADS = 4;
+// The real images are well under 200 KB and catalog.json under 100 KB; a
+// release with far bigger files is broken or tampered with, so stop early.
+const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
+const MAX_CATALOG_CHARS = 1024 * 1024;
 
 // Named after the content, so an unchanged image is never downloaded twice
 // and an updated one never overwrites the copy the app is showing.
@@ -77,18 +82,25 @@ async function hasAllImages(catalog: Catalog) {
   return present.every(Boolean);
 }
 
-/** Switches to the catalog downloaded earlier, if it is newer than the app's. */
+/**
+ * Switches to the catalog downloaded earlier, if it is newer than the app's;
+ * one an app update has overtaken is removed with its images.
+ */
 export async function loadStoredCatalog() {
   try {
-    if (!(await exists(CATALOG_FILE))) {
+    // A replacement interrupted between its two steps left only the new copy.
+    const file = (await exists(CATALOG_FILE))
+      ? CATALOG_FILE
+      : (await exists(`${CATALOG_FILE}.part`))
+      ? `${CATALOG_FILE}.part`
+      : undefined;
+    if (!file) {
       return;
     }
-    const catalog = parseCatalog(JSON.parse(await readFile(CATALOG_FILE)));
-    if (
-      catalog &&
-      catalog.revision > revision &&
-      (await hasAllImages(catalog))
-    ) {
+    const catalog = parseCatalog(JSON.parse(await readFile(file)));
+    if (catalog && catalog.revision <= revision) {
+      await unlink(DIR);
+    } else if (catalog && (await hasAllImages(catalog))) {
       activate(catalog);
     }
   } catch {
@@ -104,7 +116,13 @@ async function fetchCatalog() {
       signal: abort.signal,
       headers: {'Cache-Control': 'no-cache'},
     });
-    return response.ok ? parseCatalog(await response.json()) : undefined;
+    if (!response.ok) {
+      return undefined;
+    }
+    const text = await response.text();
+    return text.length <= MAX_CATALOG_CHARS
+      ? parseCatalog(JSON.parse(text))
+      : undefined;
   } finally {
     clearTimeout(timer);
   }
@@ -116,16 +134,29 @@ async function downloadImage(image: CatalogImage) {
     return;
   }
   const part = `${target}.part`;
+  const tooBig = (bytes: number, jobId: number) => {
+    if (bytes > MAX_IMAGE_BYTES) {
+      stopDownload(jobId);
+    }
+  };
   const {promise} = downloadFile({
     fromUrl: `${CATALOG_URL}${image.file}`,
     toFile: part,
     connectionTimeout: TIMEOUT,
     readTimeout: TIMEOUT,
+    begin: ({contentLength, jobId}) => tooBig(contentLength, jobId),
+    // Without a Content-Length, count what arrives instead.
+    progressDivider: 10,
+    progress: ({bytesWritten, jobId}) => tooBig(bytesWritten, jobId),
   });
-  const {statusCode} = await promise;
-  if (statusCode !== 200 || (await hash(part, 'sha256')) !== image.sha256) {
+  try {
+    const {statusCode} = await promise;
+    if (statusCode !== 200 || (await hash(part, 'sha256')) !== image.sha256) {
+      throw new Error(`Image ${image.file} failed to download`);
+    }
+  } catch (error) {
     await unlink(part).catch(() => {});
-    throw new Error(`Image ${image.file} failed to download`);
+    throw error;
   }
   await moveFile(part, target);
 }
