@@ -1,0 +1,54 @@
+import {test as base} from '@e2e-dev/mobile';
+import type {Device} from '@e2e-dev/mobile';
+import {expect} from 'e2e';
+
+/** Data matrix values of real boxes: the figure's code, then batch data. */
+export const BOX = {
+  barbarian: '6472860 2401',
+  fitness: '6472861 2401',
+  sprite: '6472862 2401',
+  goatherd: '6472863 2401',
+  blacktron: '6484685 2401', // Series 26 Space
+};
+
+/** Every figure code of Series 25, in catalog order. */
+export const SERIES_25 = Array.from({length: 12}, (_, i) =>
+  String(6472860 + i),
+);
+
+// Once per test file (each runs in its own realm): the build under test.
+let installed = false;
+
+/**
+ * Every test starts on a freshly launched app with no data, so settings and
+ * collections never leak from one test into the next.
+ */
+export const test = base.extend<{fresh: void}>({
+  fresh: async ({app, device}, provide) => {
+    if (!installed) {
+      // A plain install: replacing an app that isn't there fails on
+      // Android, and clearState below wipes the data anyway.
+      await device.installApp();
+      installed = true;
+    }
+    try {
+      await app.clearState();
+    } catch (error) {
+      // Physical iPhones can't wipe an app's data in place; a fresh install
+      // starts it with none just the same, only slower.
+      if ((error as {code?: string}).code !== 'UNSUPPORTED_CAPABILITY') {
+        throw error;
+      }
+      await device.installApp(undefined, {reinstall: true});
+    }
+    await app.open();
+    await provide();
+  },
+});
+
+/** Holds a box up to the simulated camera. */
+export async function scan(device: Device, value: string) {
+  await device.openLink(`mfrevealr-e2e://scan/${encodeURIComponent(value)}`);
+}
+
+export {expect};

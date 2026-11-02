@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "trace-1",
+  "createdAt": "2026-11-02T14:05:59.004Z",
+  "payload": {
+    "actions": [
+      {
+        "name": "tap",
+        "summary": "tap button \"Settings\"",
+        "target": {
+          "role": "button",
+          "name": "Settings",
+          "testId": "settings-button",
+          "selector": "id=settings-button"
+        }
+      },
+      {
+        "name": "tap",
+        "summary": "tap radio \"Español\"",
+        "target": {
+          "role": "radio",
+          "name": "Español",
+          "testId": "language-es",
+          "selector": "id=language-es"
+        }
+      }
+    ],
+    "executor": {
+      "name": "e2e-default-agent",
+      "version": "2"
+    },
+    "recordedFor": {
+      "testId": "e2e/tests/agent.e2e.ts::a%20collector%20switches%20the%20app%20to%20Spanish",
+      "targetId": "iphone",
+      "instructionDigest": "5e4dc435b7eadb2b7f5877394444d402dd44e245ce452437de2ab9abe5b3c7a1",
+      "paramsDigest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "callIndex": 0,
+      "agent": "default"
+    },
+    "recordedBy": {
+      "provider": "anthropic.messages",
+      "model": "claude-sonnet-5-5"
+    },
+    "summary": "Opened Settings and selected Español. The language radio is checked, and the UI now shows Spanish (\"Ajustes\", \"IDIOMA\", \"Escanea una caja\", \"Linterna\"). The Settings sheet is still open.",
+    "startPath": "dev.dudesoft.mfrevealr",
+    "endPath": "dev.dudesoft.mfrevealr",
+    "endAnchors": [
+      {
+        "role": "button",
+        "name": "Cerrar Ajustes"
+      },
+      {
+        "role": "text",
+        "name": "Ajustes"
+      },
+      {
+        "role": "button",
+        "name": "Cerrar",
+        "testId": "sheet-close"
+      },
+      {
+        "role": "text",
+        "name": "APARIENCIA"
+      },
+      {
+        "role": "radio",
+        "name": "Sistema",
+        "testId": "theme-system",
+        "states": [
+          "checked"
+        ]
+      },
+      {
+        "role": "radio",
+        "name": "Claro",
+        "testId": "theme-light"
+      },
+      {
+        "role": "radio",
+        "name": "Oscuro",
+        "testId": "theme-dark"
+      },
+      {
+        "role": "text",
+        "name": "IDIOMA"
+      }
+    ],
+    "goneAnchors": [
+      {
+        "role": "button",
+        "name": "Settings",
+        "testId": "settings-button"
+      },
+      {
+        "role": "switch",
+        "name": "Flashlight",
+        "testId": "torch-button",
+        "value": "0"
+      },
+      {
+        "role": "text",
+        "name": "Scan a box"
+      },
+      {
+        "role": "text",
+        "name": "Point the camera at the larger square code on the side of the box."
+      },
+      {
+        "role": "image",
+        "name": "Box side with the square code to scan highlighted in green",
+        "testId": "assets/images/help_blurred.jpg"
+      },
+      {
+        "role": "other",
+        "name": "Settings"
+      },
+      {
+        "role": "other",
+        "name": "Box side with the square code to scan highlighted in green"
+      }
+    ],
+    "endWaitMs": 14586,
+    "keyedBy": {
+      "cacheSchema": "trace-1",
+      "policyVersion": "conservative/6",
+      "project": "6916ffcfaf058227ffd70520b9929a921eeb4793c5e291c69e8c8a30df78380f",
+      "platform": "ios",
+      "engineName": "mobile",
+      "engineSpiVersion": 1,
+      "appIdentity": "627733dd66948a5aa636906d9425755e051a938ec291b2ac7fd95296e77d531e",
+      "agentContextDigest": "8461e68377cc1e155e9a93ae99b725da3f281973f6562de60aa3895ead9391f0"
+    }
+  }
+}

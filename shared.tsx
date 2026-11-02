@@ -68,7 +68,7 @@ export function ScanHint() {
   const palette = usePalette();
   const {t} = useTranslation();
   return (
-    <View>
+    <View testID="scan-hint">
       <Text style={[styles.title, {color: palette.text}]}>
         {t('hint.title')}
       </Text>

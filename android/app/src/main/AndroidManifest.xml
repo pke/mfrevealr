@@ -24,6 +24,13 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
+        <!-- End-to-end tests feed scans in through this link; only test
+             builds handle it (e2e/app/fakeCamera.tsx). -->
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <data android:scheme="mfrevealr-e2e" />
+        </intent-filter>
       </activity>
     </application>
 </manifest>

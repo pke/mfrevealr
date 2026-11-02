@@ -87,6 +87,7 @@ export function SplitChecklist({
                 return (
                   <Pressable
                     key={code}
+                    testID={`split-${code}`}
                     onPress={() => onToggle(code)}
                     accessibilityRole="checkbox"
                     accessibilityState={{checked: has}}

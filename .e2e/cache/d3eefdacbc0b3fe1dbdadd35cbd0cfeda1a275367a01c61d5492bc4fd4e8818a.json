@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "trace-1",
+  "createdAt": "2026-11-02T13:50:52.787Z",
+  "payload": {
+    "actions": [
+      {
+        "name": "tap",
+        "summary": "tap button \"Fitness Instructor, Series 25 · New for…\"",
+        "target": {
+          "role": "button",
+          "name": "Fitness Instructor, Series 25 · New for your collection, 1 of 12 ›",
+          "testId": "reveal-card",
+          "selector": "id=reveal-card"
+        }
+      }
+    ],
+    "executor": {
+      "name": "e2e-default-agent",
+      "version": "2"
+    },
+    "recordedFor": {
+      "testId": "e2e/tests/agent.e2e.ts::a%20collector%20ticks%20off%20a%20figure%20they%20already%20own",
+      "targetId": "ios",
+      "instructionDigest": "4b4ac76627a57d56982e89f502bb5e29c5908a45585ee2d7e77da43f220c4521",
+      "paramsDigest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "callIndex": 0,
+      "agent": "default"
+    },
+    "recordedBy": {
+      "provider": "anthropic.messages",
+      "model": "claude-sonnet-5-5"
+    },
+    "summary": "Tapped the reveal card. The Series 25 sheet opened with 12 tiles and \"1 of 12 found · tap to tick off\". Fitness Instructor (the scanned figure) is already checked.",
+    "startPath": "dev.dudesoft.mfrevealr",
+    "endPath": "dev.dudesoft.mfrevealr",
+    "endAnchors": [
+      {
+        "role": "button",
+        "name": "Close series"
+      },
+      {
+        "role": "button",
+        "name": "Close",
+        "testId": "series-close"
+      },
+      {
+        "role": "checkbox",
+        "name": "Fierce Barbarian",
+        "testId": "tile-6472860"
+      },
+      {
+        "role": "checkbox",
+        "name": "Fitness Instructor",
+        "testId": "tile-6472861",
+        "states": [
+          "checked"
+        ]
+      },
+      {
+        "role": "checkbox",
+        "name": "Mushroom Sprite",
+        "testId": "tile-6472862"
+      },
+      {
+        "role": "checkbox",
+        "name": "Goatherd",
+        "testId": "tile-6472863"
+      },
+      {
+        "role": "checkbox",
+        "name": "Harpy",
+        "testId": "tile-6472864"
+      },
+      {
+        "role": "checkbox",
+        "name": "Train Kid",
+        "testId": "tile-6472865"
+      }
+    ],
+    "endWaitMs": 12184,
+    "keyedBy": {
+      "cacheSchema": "trace-1",
+      "policyVersion": "conservative/6",
+      "project": "6916ffcfaf058227ffd70520b9929a921eeb4793c5e291c69e8c8a30df78380f",
+      "platform": "ios",
+      "engineName": "mobile",
+      "engineSpiVersion": 1,
+      "appIdentity": "627733dd66948a5aa636906d9425755e051a938ec291b2ac7fd95296e77d531e",
+      "agentContextDigest": "8461e68377cc1e155e9a93ae99b725da3f281973f6562de60aa3895ead9391f0"
+    }
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "trace-1",
+  "createdAt": "2026-11-02T14:05:26.202Z",
+  "payload": {
+    "actions": [
+      {
+        "name": "tap",
+        "summary": "tap checkbox \"Goatherd\"",
+        "target": {
+          "role": "checkbox",
+          "name": "Goatherd",
+          "testId": "tile-6472863",
+          "selector": "id=tile-6472863"
+        }
+      }
+    ],
+    "executor": {
+      "name": "e2e-default-agent",
+      "version": "2"
+    },
+    "recordedFor": {
+      "testId": "e2e/tests/agent.e2e.ts::a%20collector%20ticks%20off%20a%20figure%20they%20already%20own",
+      "targetId": "iphone",
+      "instructionDigest": "1b090a3069a036bdbb8f3c3bcf2a3a12fd13f376a70571e9a1a899810b328b3f",
+      "paramsDigest": "ce7dfd6fe1c03316b6887c01240788f2e61d4ce465955717ff77b449f58e058f",
+      "callIndex": 0,
+      "agent": "default"
+    },
+    "recordedBy": {
+      "provider": "anthropic.messages",
+      "model": "claude-sonnet-5-5"
+    },
+    "summary": "Tapped the Goatherd tile in the Series 25 sheet. It now shows checked, and the counter changed from \"1 of 12 found\" to \"2 of 12 found\". Fitness Instructor is still checked.",
+    "startPath": "dev.dudesoft.mfrevealr",
+    "endPath": "dev.dudesoft.mfrevealr",
+    "endAnchors": [
+      {
+        "role": "text",
+        "name": "2 of 12 found · tap to tick off"
+      },
+      {
+        "role": "checkbox",
+        "name": "Goatherd",
+        "testId": "tile-6472863",
+        "states": [
+          "checked"
+        ]
+      },
+      {
+        "role": "button",
+        "name": "Fitness Instructor, Series 25 · New for your collection, 2 of 12 ›",
+        "testId": "reveal-card"
+      },
+      {
+        "role": "other",
+        "name": "Fitness Instructor, Series 25 · New for your collection, 2 of 12 ›"
+      }
+    ],
+    "goneAnchors": [
+      {
+        "role": "text",
+        "name": "1 of 12 found · tap to tick off"
+      },
+      {
+        "role": "checkbox",
+        "name": "Goatherd",
+        "testId": "tile-6472863"
+      },
+      {
+        "role": "button",
+        "name": "Fitness Instructor, Series 25 · New for your collection, 1 of 12 ›",
+        "testId": "reveal-card"
+      },
+      {
+        "role": "other",
+        "name": "Fitness Instructor, Series 25 · New for your collection, 1 of 12 ›"
+      }
+    ],
+    "endWaitMs": 13350,
+    "keyedBy": {
+      "cacheSchema": "trace-1",
+      "policyVersion": "conservative/6",
+      "project": "6916ffcfaf058227ffd70520b9929a921eeb4793c5e291c69e8c8a30df78380f",
+      "platform": "ios",
+      "engineName": "mobile",
+      "engineSpiVersion": 1,
+      "appIdentity": "627733dd66948a5aa636906d9425755e051a938ec291b2ac7fd95296e77d531e",
+      "agentContextDigest": "8461e68377cc1e155e9a93ae99b725da3f281973f6562de60aa3895ead9391f0"
+    }
+  }
+}

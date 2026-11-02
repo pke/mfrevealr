@@ -114,6 +114,7 @@ export function SettingsSheet({
           return (
             <Pressable
               key={value}
+              testID={`theme-${value}`}
               onPress={() => onChange({theme: value})}
               accessibilityRole="radio"
               accessibilityState={{checked: selected}}
@@ -145,6 +146,7 @@ export function SettingsSheet({
           return (
             <Pressable
               key={value}
+              testID={`language-${value}`}
               onPress={() => onChange({language: value})}
               accessibilityRole="radio"
               accessibilityState={{checked: selected}}
@@ -176,6 +178,7 @@ export function SettingsSheet({
           return (
             <Pressable
               key={value}
+              testID={`layout-${value}`}
               onPress={() => onChange({layout: value})}
               accessibilityRole="radio"
               accessibilityState={{checked: selected}}
@@ -214,6 +217,7 @@ export function SettingsSheet({
           })}
         </Text>
         <Pressable
+          testID="catalog-check"
           onPress={checkCatalog}
           disabled={catalogStatus === 'checking'}
           accessibilityRole="button"
@@ -233,6 +237,7 @@ export function SettingsSheet({
       )}
       {canReset && (
         <Pressable
+          testID="settings-start-over"
           onPress={onReset}
           accessibilityRole="button"
           style={styles.reset}>
@@ -242,7 +247,10 @@ export function SettingsSheet({
         </Pressable>
       )}
       {/* Selectable, so it can be copied into a bug report. */}
-      <Text selectable style={[styles.version, {color: palette.secondary}]}>
+      <Text
+        testID="app-version"
+        selectable
+        style={[styles.version, {color: palette.secondary}]}>
         {t('settings.version', {version: appVersion()})}
       </Text>
     </Sheet>

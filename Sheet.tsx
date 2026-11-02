@@ -170,6 +170,7 @@ export function Sheet({
               {title}
             </Text>
             <Pressable
+              testID="sheet-close"
               onPress={onClose}
               accessibilityRole="button"
               hitSlop={12}>

@@ -126,7 +126,11 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            if (signingProperty('UPLOAD_STORE_FILE')) {
+            if (System.getenv('E2E_BUILD')) {
+                // End-to-end test builds (simulated camera) never ship: the
+                // debug key lets CI build them without the upload key.
+                signingConfig signingConfigs.debug
+            } else if (signingProperty('UPLOAD_STORE_FILE')) {
                 signingConfig signingConfigs.release
             }
             minifyEnabled enableProguardInReleaseBuilds

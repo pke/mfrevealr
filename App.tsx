@@ -50,6 +50,7 @@ import {
 } from './resolveCode';
 import {Layout, Settings, useSettings} from './settings';
 import {STORE_SCENE} from './storeScene';
+import {FakeCamera} from './fakeCamera';
 import {SettingsSheet} from './SettingsSheet';
 import {
   CheckBadge,
@@ -201,6 +202,7 @@ function RevealCard({
         },
       ]}>
       <Pressable
+        testID="reveal-card"
         onPress={() => onOpenSeries(scan.code)}
         accessibilityRole="button"
         accessibilityHint={t('card.showSeries')}>
@@ -799,6 +801,7 @@ function Collection({
                 </Text>
               </View>
               <Pressable
+                testID="series-close"
                 onPress={onClose}
                 accessibilityRole="button"
                 hitSlop={12}>
@@ -825,6 +828,7 @@ function Collection({
                 return (
                   <Pressable
                     key={item}
+                    testID={`tile-${item}`}
                     onPress={() => onToggle(item)}
                     accessibilityRole="checkbox"
                     accessibilityState={{checked: has}}
@@ -873,6 +877,7 @@ function Collection({
             </View>
           )}
           <Pressable
+            testID="series-start-over"
             onPress={onReset}
             onLayout={measureChrome('footer')}
             accessibilityRole="button"
@@ -903,6 +908,7 @@ function SettingsButton({onPress}: {onPress: () => void}) {
   const {t} = useTranslation();
   return (
     <Pressable
+      testID="settings-button"
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={t('settings.title')}
@@ -917,6 +923,7 @@ function TorchButton({on, onPress}: {on: boolean; onPress: () => void}) {
   const {t} = useTranslation();
   return (
     <Pressable
+      testID="torch-button"
       onPress={onPress}
       accessibilityRole="switch"
       accessibilityState={{checked: on}}
@@ -937,7 +944,11 @@ function Scanner({
   settings: Settings;
   onChangeSettings: (change: Partial<Settings>) => void;
 }): React.JSX.Element {
-  const {hasPermission, requestPermission} = useCameraPermission();
+  const permission = useCameraPermission();
+  // A simulated camera needs no permission, and asking for one would only
+  // put a system prompt over the screen under test.
+  const hasPermission = permission.hasPermission || Boolean(FakeCamera);
+  const requestPermission = permission.requestPermission;
   const appIsActive = useAppIsActive();
   const device = useCameraDevice('back', {
     physicalDevices: ['ultra-wide-angle-camera'],
@@ -1007,39 +1018,35 @@ function Scanner({
     });
   }, []);
 
+  const onScan = (values: (string | undefined)[]) => {
+    const entry = values.map(resolveScan).find(Boolean);
+    // The same box stays in view for many frames; only react once.
+    if (sheetOpenRef.current || !entry || entry.code === lastCodeRef.current) {
+      return;
+    }
+    const {code, setId} = entry;
+    lastCodeRef.current = code;
+    let isNew = true;
+    if (setId !== currentSetIdRef.current) {
+      // A box from another series starts a new collection.
+      currentSetIdRef.current = setId;
+      figuresRef.current = new Set([code]);
+      setCurrentSetId(setId);
+    } else if (!figuresRef.current.has(code)) {
+      figuresRef.current = new Set(figuresRef.current).add(code);
+    } else {
+      isNew = false;
+    }
+    if (isNew) {
+      setFiguresInSet(figuresRef.current);
+      vibrate();
+    }
+    setLastScan({code, isNew});
+  };
+
   const codeScanner = useCodeScanner({
     codeTypes: ['data-matrix'],
-    onCodeScanned: (codes: Code[]) => {
-      const entry = codes
-        .map(scanned => resolveScan(scanned.value))
-        .find(Boolean);
-      // The same box stays in view for many frames; only react once.
-      if (
-        sheetOpenRef.current ||
-        !entry ||
-        entry.code === lastCodeRef.current
-      ) {
-        return;
-      }
-      const {code, setId} = entry;
-      lastCodeRef.current = code;
-      let isNew = true;
-      if (setId !== currentSetIdRef.current) {
-        // A box from another series starts a new collection.
-        currentSetIdRef.current = setId;
-        figuresRef.current = new Set([code]);
-        setCurrentSetId(setId);
-      } else if (!figuresRef.current.has(code)) {
-        figuresRef.current = new Set(figuresRef.current).add(code);
-      } else {
-        isNew = false;
-      }
-      if (isNew) {
-        setFiguresInSet(figuresRef.current);
-        vibrate();
-      }
-      setLastScan({code, isNew});
-    },
+    onCodeScanned: (codes: Code[]) => onScan(codes.map(code => code.value)),
   });
 
   React.useEffect(() => {
@@ -1104,6 +1111,8 @@ function Scanner({
           style={{width: screenSize.width, height: screenSize.height}}
           resizeMode="cover"
         />
+      ) : FakeCamera ? (
+        <FakeCamera onScan={value => onScan([value])} />
       ) : device ? (
         <Camera
           device={device}
@@ -1137,7 +1146,7 @@ function Scanner({
       ]}
       pointerEvents="box-none">
       <SettingsButton onPress={() => setSettingsOpen(true)} />
-      {device?.hasTorch && (
+      {(device?.hasTorch || FakeCamera) && (
         <TorchButton on={torch} onPress={() => setTorch(on => !on)} />
       )}
     </View>

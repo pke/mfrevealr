@@ -1,0 +1,131 @@
+name: e2e
+
+# End-to-end tests on an iOS simulator and an Android emulator, against
+# E2E_BUILD=1 release builds whose camera is simulated (e2e/app/fakeCamera.tsx).
+# Agent steps need the ANTHROPIC_API_KEY repository secret; without it they
+# skip and the deterministic tests still run.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  E2E_TELEMETRY_DISABLED: 1
+
+jobs:
+  ios:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ios/Pods
+          key: pods-${{ runner.os }}-${{ hashFiles('ios/Podfile.lock') }}
+      - run: bundle exec pod install
+        working-directory: ios
+
+      - name: Build for the simulator
+        run: yarn e2e:build:ios
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.agent-device/apple-runner/derived
+          key: agent-device-runner-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+
+      # The newest iOS runtime the image has, so a runner image update
+      # doesn't break the job; the app is installed by the suite itself.
+      - name: Boot a simulator
+        run: |
+          RUNTIME=$(xcrun simctl list runtimes -j | python3 -c '
+          import json, sys
+          runtimes = [r for r in json.load(sys.stdin)["runtimes"]
+                      if r["platform"] == "iOS" and r["isAvailable"]
+                      and any(t["name"] == "iPhone 17 Pro" for t in r.get("supportedDeviceTypes", []))]
+          runtimes.sort(key=lambda r: [int(p) for p in r["version"].split(".")])
+          print(runtimes[-1]["identifier"])')
+          echo "Runtime: $RUNTIME"
+          UDID=$(xcrun simctl create e2e "iPhone 17 Pro" "$RUNTIME")
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          echo "E2E_IOS_DEVICE=$UDID" >> "$GITHUB_ENV"
+
+      - name: Run e2e
+        run: npx e2e run --target ios --reporter list,junit
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: e2e-ios
+          path: .e2e
+          if-no-files-found: warn
+          retention-days: 7
+
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: yarn install --frozen-lockfile
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # E2E_BUILD bundles the simulated camera and signs with the debug key.
+      - name: Build the APK
+        run: ./gradlew app:assembleRelease
+        working-directory: android
+        env:
+          E2E_BUILD: 1
+
+      - name: Run on an emulator
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 36
+          arch: x86_64
+          target: google_apis
+          profile: pixel_7
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          # Each line runs in its own shell; the suite installs the APK.
+          script: npx e2e run --target android --reporter list,junit
+        env:
+          E2E_ANDROID_DEVICE: emulator-5554
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: e2e-android
+          path: .e2e
+          if-no-files-found: warn
+          retention-days: 7

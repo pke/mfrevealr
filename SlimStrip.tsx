@@ -129,6 +129,7 @@ export function SlimStrip({
               return (
                 <Pressable
                   key={code}
+                  testID={`strip-${code}`}
                   onPress={() => onOpenSeries(code)}
                   accessibilityRole="button"
                   accessibilityLabel={t(
