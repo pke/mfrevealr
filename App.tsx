@@ -49,6 +49,7 @@ import {
   resolveScan,
 } from './resolveCode';
 import {Layout, Settings, useSettings} from './settings';
+import {createSightings} from './sightings';
 import {STORE_SCENE} from './storeScene';
 import {FakeCamera} from './fakeCamera';
 import {SettingsSheet} from './SettingsSheet';
@@ -1069,7 +1070,7 @@ function Scanner({
   figuresRef.current = figuresInSet;
   const currentSetIdRef = React.useRef(currentSetId);
   currentSetIdRef.current = currentSetId;
-  const lastCodeRef = React.useRef<string | undefined>(undefined);
+  const sightings = React.useRef(createSightings()).current;
   // The camera keeps running behind the sheets, which leave it visible at the
   // top, but scans wait until they close so nothing changes underneath.
   const sheetOpenRef = React.useRef(false);
@@ -1092,14 +1093,20 @@ function Scanner({
     });
   }, []);
 
-  const onScan = (values: (string | undefined)[]) => {
-    const entry = values.map(resolveScan).find(Boolean);
-    // The same box stays in view for many frames; only react once.
-    if (sheetOpenRef.current || !entry || entry.code === lastCodeRef.current) {
+  // `deliberate` scans (the test camera) are one box held up on purpose, so
+  // they count even when the same box was seen just before.
+  const onScan = (values: (string | undefined)[], deliberate = false) => {
+    const entries = values
+      .map(resolveScan)
+      .filter(entry => entry !== undefined);
+    // Every box in the frame is recorded, also behind a sheet, so a box that
+    // stays in view never counts again, and two boxes don't take turns.
+    const fresh = entries.filter(entry => sightings.see(entry.code));
+    const entry = deliberate ? entries[0] : fresh[0];
+    if (sheetOpenRef.current || !entry) {
       return;
     }
     const {code, setId} = entry;
-    lastCodeRef.current = code;
     let isNew = true;
     if (setId !== currentSetIdRef.current) {
       // A box from another series starts a new collection.
@@ -1152,13 +1159,13 @@ function Scanner({
         onPress: () => {
           setFiguresInSet(new Set());
           setLastScan(undefined);
-          lastCodeRef.current = undefined;
+          sightings.clear();
           setSeriesOpen(false);
           setSettingsOpen(false);
         },
       },
     ]);
-  }, [t]);
+  }, [t, sightings]);
 
   const closeSeries = React.useCallback(() => setSeriesOpen(false), []);
   const closeSettings = React.useCallback(() => setSettingsOpen(false), []);
@@ -1189,7 +1196,7 @@ function Scanner({
           resizeMode="cover"
         />
       ) : FakeCamera ? (
-        <FakeCamera onScan={value => onScan([value])} />
+        <FakeCamera onScan={value => onScan([value], true)} />
       ) : device ? (
         <Camera
           device={device}
