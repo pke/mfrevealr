@@ -731,6 +731,10 @@ function Collection({
   const opened = React.useRef(false);
   const visibleRef = React.useRef(visible);
   visibleRef.current = visible;
+  // Set from the moment the sheet starts closing until it is gone.
+  const closing = React.useRef(false);
+  const flightRef = React.useRef(flight);
+  flightRef.current = flight;
   const onGridLayout = React.useCallback(() => {
     if (!visible || opened.current) {
       return;
@@ -745,6 +749,14 @@ function Collection({
   }, [visible, sheetHeight, prepareFlight, run]);
 
   React.useEffect(() => {
+    if (visible && closing.current) {
+      // Reopened while still closing: turn around from where everything is,
+      // the figure heading back into its tile.
+      closing.current = false;
+      opened.current = true;
+      run(1, flightRef.current, () => {});
+      return;
+    }
     if (visible || !mounted) {
       return;
     }
@@ -756,11 +768,20 @@ function Collection({
       return;
     }
     opened.current = false;
+    closing.current = true;
     // A swipe already has the figure on its way; keep flying from where the
     // finger let go instead of measuring the dragged tile again.
     const pending = swipeFlight.current ?? prepareFlight(false, 0);
     swipeFlight.current = undefined;
-    pending.then(prepared => run(0, prepared, () => setMounted(false)));
+    pending.then(prepared => {
+      // Reopened while measuring: the sheet never started to close.
+      if (!visibleRef.current) {
+        run(0, prepared, () => {
+          closing.current = false;
+          setMounted(false);
+        });
+      }
+    });
     // Closing should only react to `visible`; the flight reads the latest
     // values through prepareFlight.
     // eslint-disable-next-line react-hooks/exhaustive-deps

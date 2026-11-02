@@ -71,6 +71,11 @@ export function Sheet({
         closing.current = false;
         setMounted(false);
       });
+    } else if (!visible && mounted && !closing.current) {
+      // Closed before the first layout opened it: nothing showed yet, so
+      // start from scratch next time instead of waiting for a layout that
+      // has already happened.
+      setMounted(false);
     }
   }, [visible, mounted, height, sheetY, slide]);
 
