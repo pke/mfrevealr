@@ -24,13 +24,20 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
-        <!-- End-to-end tests feed scans in through this link; only test
-             builds handle it (e2e/app/fakeCamera.tsx). -->
+      </activity>
+      <!-- End-to-end tests feed scans in through this link, which only test
+           builds handle (e2e/app/fakeCamera.tsx); everywhere else the alias
+           is disabled, so no app or page can open the link. -->
+      <activity-alias
+        android:name=".E2ELinks"
+        android:targetActivity=".MainActivity"
+        android:enabled="${e2eLinks}"
+        android:exported="true">
         <intent-filter>
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.DEFAULT" />
             <data android:scheme="mfrevealr-e2e" />
         </intent-filter>
-      </activity>
+      </activity-alias>
     </application>
 </manifest>

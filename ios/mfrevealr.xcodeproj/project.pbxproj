@@ -127,6 +127,7 @@
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				B325FCC8A1AB2FABCB0197E3 /* Write Version to Settings Bundle */,
+				6A5A88C9A351C5277AEDDEBB /* Register Test Link (E2E builds) */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */,
 				E2A68AC2AF993CAD9F6BC7CD /* Strip Framework Symbols */,
@@ -228,6 +229,25 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-mfrevealr/Pods-mfrevealr-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		6A5A88C9A351C5277AEDDEBB /* Register Test Link (E2E builds) */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Register Test Link (E2E builds)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/scripts/e2e-url-scheme.sh\"\n";
 		};
 		B325FCC8A1AB2FABCB0197E3 /* Write Version to Settings Bundle */ = {
 			isa = PBXShellScriptBuildPhase;

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "trace-1",
+  "createdAt": "2026-11-02T14:42:46.753Z",
+  "payload": {
+    "actions": [
+      {
+        "name": "tap",
+        "summary": "tap button \"Fitness Instructor, Series 25 · New for…\" in \"Fitness Instructor\"",
+        "target": {
+          "role": "button",
+          "name": "Fitness Instructor, Series 25 · New for your collection, 1 of 12 ›",
+          "testId": "reveal-card",
+          "selector": "id=reveal-card",
+          "within": "Fitness Instructor"
+        }
+      }
+    ],
+    "executor": {
+      "name": "e2e-default-agent",
+      "version": "2"
+    },
+    "recordedFor": {
+      "testId": "e2e/tests/agent.e2e.ts::a%20collector%20ticks%20off%20a%20figure%20they%20already%20own",
+      "targetId": "android",
+      "instructionDigest": "4b4ac76627a57d56982e89f502bb5e29c5908a45585ee2d7e77da43f220c4521",
+      "paramsDigest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "callIndex": 0,
+      "agent": "default"
+    },
+    "recordedBy": {
+      "provider": "anthropic.messages",
+      "model": "claude-sonnet-5-5"
+    },
+    "summary": "Tapped the reveal card for Fitness Instructor. The Series 25 sheet opened with 12 tiles and the header \"1 of 12 found · tap to tick off\". The Fitness Instructor tile (tile-6472861) is already checked.",
+    "startPath": "dev.dudesoft.mfrevealr.app",
+    "endPath": "dev.dudesoft.mfrevealr.app",
+    "endAnchors": [
+      {
+        "role": "button",
+        "name": "Close series"
+      },
+      {
+        "role": "text",
+        "name": "Series 25"
+      },
+      {
+        "role": "text",
+        "name": "Close"
+      },
+      {
+        "role": "text",
+        "name": "1 of 12 found · tap to tick off"
+      },
+      {
+        "role": "text",
+        "name": "Fierce Barbarian"
+      },
+      {
+        "role": "text",
+        "name": "✓"
+      },
+      {
+        "role": "text",
+        "name": "Mushroom Sprite"
+      },
+      {
+        "role": "text",
+        "name": "Goatherd"
+      }
+    ],
+    "endWaitMs": 11614,
+    "keyedBy": {
+      "cacheSchema": "trace-1",
+      "policyVersion": "conservative/6",
+      "project": "6916ffcfaf058227ffd70520b9929a921eeb4793c5e291c69e8c8a30df78380f",
+      "platform": "android",
+      "engineName": "mobile",
+      "engineSpiVersion": 1,
+      "appIdentity": "e3a362ea604775bbdaf412b94e54b6783e13a2a80d79cc5287cd7cd3161246e6",
+      "agentContextDigest": "8461e68377cc1e155e9a93ae99b725da3f281973f6562de60aa3895ead9391f0"
+    }
+  }
+}

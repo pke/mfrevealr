@@ -97,6 +97,8 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 7
         versionName "10.0.0"
+        // The test link (AndroidManifest.xml) exists only in E2E_BUILD builds.
+        manifestPlaceholders += [e2eLinks: System.getenv('E2E_BUILD') ? 'true' : 'false']
     }
     androidResources {
         // Only English strings ship; keeps AndroidX/Compose locales out of resources.arsc.

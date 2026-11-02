@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "trace-1",
+  "createdAt": "2026-11-02T14:43:09.938Z",
+  "payload": {
+    "actions": [
+      {
+        "name": "tap",
+        "summary": "tap button \"Settings\" in \"Simulated camera\"",
+        "target": {
+          "role": "button",
+          "name": "Settings",
+          "testId": "settings-button",
+          "selector": "id=settings-button",
+          "within": "Simulated camera"
+        }
+      },
+      {
+        "name": "tap",
+        "summary": "tap radio \"Español\" in \"Settings\"",
+        "target": {
+          "role": "radio",
+          "name": "Español",
+          "testId": "language-es",
+          "selector": "id=language-es",
+          "within": "Settings"
+        }
+      }
+    ],
+    "executor": {
+      "name": "e2e-default-agent",
+      "version": "2"
+    },
+    "recordedFor": {
+      "testId": "e2e/tests/agent.e2e.ts::a%20collector%20switches%20the%20app%20to%20Spanish",
+      "targetId": "android",
+      "instructionDigest": "5e4dc435b7eadb2b7f5877394444d402dd44e245ce452437de2ab9abe5b3c7a1",
+      "paramsDigest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "callIndex": 0,
+      "agent": "default"
+    },
+    "recordedBy": {
+      "provider": "anthropic.messages",
+      "model": "claude-sonnet-5-5"
+    },
+    "summary": "Opened Settings and selected Español. The language radio is checked, and the Settings sheet and scan screen now show Spanish text (Ajustes, Escanea una caja, Linterna). \"Simulated camera\" stays in English.",
+    "startPath": "dev.dudesoft.mfrevealr.app",
+    "endPath": "dev.dudesoft.mfrevealr.app",
+    "endAnchors": [
+      {
+        "role": "button",
+        "name": "Cerrar Ajustes"
+      },
+      {
+        "role": "text",
+        "name": "Ajustes"
+      },
+      {
+        "role": "text",
+        "name": "Cerrar"
+      },
+      {
+        "role": "text",
+        "name": "APARIENCIA"
+      },
+      {
+        "role": "text",
+        "name": "Sistema"
+      },
+      {
+        "role": "text",
+        "name": "Claro"
+      },
+      {
+        "role": "text",
+        "name": "Oscuro"
+      },
+      {
+        "role": "text",
+        "name": "IDIOMA"
+      }
+    ],
+    "goneAnchors": [
+      {
+        "role": "text",
+        "name": "Scan a box"
+      },
+      {
+        "role": "text",
+        "name": "Point the camera at the larger square code on the side of the box."
+      },
+      {
+        "role": "image",
+        "name": "Box side with the square code to scan highlighted in green"
+      },
+      {
+        "role": "button",
+        "name": "Settings",
+        "testId": "settings-button"
+      },
+      {
+        "role": "switch",
+        "name": "Flashlight",
+        "testId": "torch-button"
+      }
+    ],
+    "endWaitMs": 13248,
+    "keyedBy": {
+      "cacheSchema": "trace-1",
+      "policyVersion": "conservative/6",
+      "project": "6916ffcfaf058227ffd70520b9929a921eeb4793c5e291c69e8c8a30df78380f",
+      "platform": "android",
+      "engineName": "mobile",
+      "engineSpiVersion": 1,
+      "appIdentity": "e3a362ea604775bbdaf412b94e54b6783e13a2a80d79cc5287cd7cd3161246e6",
+      "agentContextDigest": "8461e68377cc1e155e9a93ae99b725da3f281973f6562de60aa3895ead9391f0"
+    }
+  }
+}
