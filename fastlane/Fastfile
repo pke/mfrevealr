@@ -1,0 +1,197 @@
+# Deployment lanes. Credentials come from fastlane/.env (gitignored, see
+# .env.example): APPLE_ID, APP_STORE_CONNECT_API_KEY_KEY_ID,
+# APP_STORE_CONNECT_API_KEY_ISSUER_ID, APP_STORE_CONNECT_API_KEY_KEY_FILEPATH
+#
+# Run from mfrevealr/ with the Homebrew Ruby and the globally installed fastlane
+# (the Gemfile pins CocoaPods' dependencies, so fastlane stays out of it):
+#   PATH="/opt/homebrew/opt/ruby/bin:$PATH" fastlane ios release
+#
+# The app's major version is the number of supported sets.
+
+default_platform(:ios)
+
+APP_ID = "dev.dudesoft.mfrevealr"
+WORKSPACE = "ios/mfrevealr.xcworkspace"
+XCODEPROJ = "ios/mfrevealr.xcodeproj"
+SCHEME = "mfrevealr"
+TEAM_ID = "K9VADMGRA7"
+# Lanes execute with the fastlane/ folder as CWD — resolve against it explicitly
+METADATA_PATH = File.expand_path("metadata", FastlaneCore::FastlaneFolder.path)
+BUILD_PATH = File.expand_path("../build", FastlaneCore::FastlaneFolder.path)
+
+# The store only takes a language with a description, so locales that so far
+# have release notes only (the app speaks more languages than its listing)
+# stay out of uploads until their texts are written.
+def with_complete_metadata
+  require "tmpdir"
+  Dir.mktmpdir do |dir|
+    Dir[File.join(METADATA_PATH, "*", "description.txt")].each do |file|
+      FileUtils.cp_r(File.dirname(file), dir)
+    end
+    UI.message("Store languages: #{Dir.children(dir).sort.join(', ')}")
+    yield dir
+  end
+end
+
+platform :ios do
+  desc "Show App Store version state"
+  lane :versions do
+    api_key = app_store_connect_api_key
+    Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.from(hash: api_key)
+    app = Spaceship::ConnectAPI::App.find(APP_ID)
+    live = app.get_live_app_store_version
+    UI.important("Live version: #{live ? live.version_string : 'none'}")
+    app.get_app_store_versions.first(8).each do |v|
+      UI.message(" - #{v.version_string} [#{v.app_store_state}]")
+    end
+  end
+
+  desc "Fetch or create the distribution certificate and App Store profile"
+  lane :signing do
+    app_store_connect_api_key
+    # Downloads go to build/ (gitignored), not the project root
+    cert(team_id: TEAM_ID, output_path: BUILD_PATH)
+    # force: always regenerate so the profile embeds the current certificate
+    sigh(team_id: TEAM_ID, app_identifier: APP_ID, force: true, output_path: BUILD_PATH)
+  end
+
+  desc "Build a signed App Store IPA (build number = latest TestFlight + 1)"
+  private_lane :build do
+    signing
+
+    version = get_version_number(xcodeproj: XCODEPROJ, target: SCHEME)
+    build_number = latest_testflight_build_number(version: version, initial_build_number: 0) + 1
+    UI.important("Building #{version} (#{build_number})")
+
+    profile = lane_context[SharedValues::SIGH_NAME]
+    gym(
+      workspace: WORKSPACE,
+      scheme: SCHEME,
+      configuration: "Release",
+      output_directory: BUILD_PATH,
+      output_name: "mfrevealr.ipa",
+      clean: true,
+      # sign manually via xcargs so the pbxproj stays untouched
+      xcargs: [
+        "CODE_SIGN_STYLE=Manual",
+        "DEVELOPMENT_TEAM=#{TEAM_ID}",
+        "CODE_SIGN_IDENTITY='Apple Distribution'",
+        "PROVISIONING_PROFILE_SPECIFIER='#{profile}'",
+        "CURRENT_PROJECT_VERSION=#{build_number}",
+      ].join(" "),
+      export_options: {
+        method: "app-store-connect",
+        signingStyle: "manual",
+        provisioningProfiles: {APP_ID => profile},
+      },
+    )
+  end
+
+  desc "Build and upload to TestFlight, with the English release notes as What to Test"
+  lane :beta do
+    build
+    upload_to_testflight(
+      changelog: File.read(File.join(METADATA_PATH, "en-US", "release_notes.txt")),
+      skip_waiting_for_build_processing: true,
+    )
+  end
+
+  desc "Build and upload the binary to App Store Connect (no metadata, no auto-submit)"
+  lane :release do
+    build
+    upload_to_app_store(
+      skip_metadata: true,
+      skip_screenshots: true,
+      run_precheck_before_submit: false,
+      submit_for_review: false,
+    )
+  end
+
+  desc "Upload an already-built IPA from build/ to App Store Connect"
+  lane :upload_ipa do
+    app_store_connect_api_key
+    upload_to_app_store(
+      ipa: File.join(BUILD_PATH, "mfrevealr.ipa"),
+      skip_metadata: true,
+      skip_screenshots: true,
+      run_precheck_before_submit: false,
+      submit_for_review: false,
+    )
+  end
+
+  desc "Replace the screenshots of the version in preparation with fastlane/screenshots (made by yarn screenshots)"
+  lane :upload_screenshots do
+    app_store_connect_api_key
+    upload_to_app_store(
+      app_version: get_version_number(xcodeproj: XCODEPROJ, target: SCHEME),
+      screenshots_path: File.expand_path("screenshots", FastlaneCore::FastlaneFolder.path),
+      overwrite_screenshots: true,
+      force: true, # skip the interactive Preview.html confirmation
+      skip_binary_upload: true,
+      skip_metadata: true,
+      run_precheck_before_submit: false,
+      submit_for_review: false,
+    )
+  end
+
+  desc "Upload the store texts and release notes from fastlane/metadata to the version in preparation"
+  lane :upload_metadata do
+    app_store_connect_api_key
+    with_complete_metadata do |metadata_path|
+      upload_to_app_store(
+        app_version: get_version_number(xcodeproj: XCODEPROJ, target: SCHEME),
+        metadata_path: metadata_path,
+        force: true, # skip the interactive Preview.html confirmation
+        skip_binary_upload: true,
+        skip_screenshots: true,
+        run_precheck_before_submit: false,
+        submit_for_review: false,
+      )
+    end
+  end
+
+  desc "Download the App Store metadata into fastlane/metadata"
+  lane :pull_metadata do
+    api_key = app_store_connect_api_key
+    require "deliver"
+    require "deliver/setup"
+    config = FastlaneCore::Configuration.create(
+      Deliver::Options.available_options,
+      {
+        api_key: api_key,
+        app_identifier: APP_ID,
+        metadata_path: METADATA_PATH,
+        force: true,
+      }
+    )
+    Deliver::Runner.new(config) # logs in and caches the app
+    app = Deliver.cache[:app]
+    version = app.get_latest_app_store_version(platform: Spaceship::ConnectAPI::Platform::IOS)
+    Deliver::Setup.new.generate_metadata_files(app, version, METADATA_PATH, config)
+    UI.success("Metadata for #{version.version_string} downloaded to fastlane/metadata")
+  end
+
+  desc "Submit the uploaded build for review with the release notes from fastlane/metadata"
+  lane :submit do
+    app_store_connect_api_key
+    version = get_version_number(xcodeproj: XCODEPROJ, target: SCHEME)
+    build_number = latest_testflight_build_number(version: version, initial_build_number: 0)
+    UI.user_error!("No uploaded build found for #{version}") if build_number.zero?
+    UI.important("Submitting #{version} (#{build_number}) for review")
+    with_complete_metadata do |metadata_path|
+      upload_to_app_store(
+        app_version: version,
+        build_number: build_number.to_s,
+        metadata_path: metadata_path,
+        force: true, # skip the interactive Preview.html confirmation
+        skip_binary_upload: true,
+        skip_screenshots: true,
+        run_precheck_before_submit: false,
+        submit_for_review: true,
+        submission_information: {
+          add_id_info_uses_idfa: false,
+        },
+      )
+    end
+  end
+end

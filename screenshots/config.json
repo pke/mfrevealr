@@ -1,0 +1,315 @@
+{
+  "device": "iPhone 17 Pro Max",
+  "screen": {
+    "width": 1320,
+    "height": 2868,
+    "scale": 3
+  },
+  "pixelate": 22,
+  "frame": {
+    "background": "#DA291C",
+    "headline": "#FFFFFF",
+    "font": "/Library/Fonts/SF-Pro-Display-Bold.otf",
+    "fonts": {
+      "zh-Hans": {
+        "file": "/System/Library/Fonts/STHeiti Medium.ttc",
+        "stroke": 3
+      }
+    }
+  },
+  "locales": [
+    "en-US",
+    "de-DE",
+    "es-ES",
+    "fr-FR",
+    "it",
+    "pl",
+    "pt-BR",
+    "ru",
+    "zh-Hans"
+  ],
+  "scenes": [
+    {
+      "name": "reveal-card",
+      "appearance": "light",
+      "layout": "card",
+      "photo": "shelf.jpg",
+      "photoTop": 45,
+      "setId": "71045",
+      "scan": "6472861",
+      "found": [
+        "6472860",
+        "6472861",
+        "6472863",
+        "6472866",
+        "6472868",
+        "6472870"
+      ],
+      "headline": {
+        "en-US": [
+          "Know what's inside",
+          "before you open it"
+        ],
+        "de-DE": [
+          "Wissen, was drin ist –",
+          "noch vor dem Öffnen"
+        ],
+        "es-ES": [
+          "Descubre qué hay dentro",
+          "antes de abrirlo"
+        ],
+        "fr-FR": [
+          "Découvrez la figurine",
+          "avant d'ouvrir la boîte"
+        ],
+        "it": [
+          "Scopri cosa c'è dentro",
+          "prima di aprire la scatola"
+        ],
+        "pl": [
+          "Zobacz, co jest w środku,",
+          "zanim otworzysz"
+        ],
+        "pt-BR": [
+          "Saiba o que tem dentro",
+          "antes de abrir"
+        ],
+        "ru": [
+          "Узнайте, что внутри,",
+          "не открывая коробку"
+        ],
+        "zh-Hans": [
+          "拆盒之前",
+          "就知道里面是哪个人仔"
+        ]
+      }
+    },
+    {
+      "name": "slim-strip",
+      "appearance": "dark",
+      "layout": "strip",
+      "photo": "store.jpg",
+      "photoTop": 73,
+      "setId": "71045",
+      "scan": "6472864",
+      "found": [
+        "6472860",
+        "6472861",
+        "6472862",
+        "6472863",
+        "6472864",
+        "6472866",
+        "6472868",
+        "6472870"
+      ],
+      "headline": {
+        "en-US": [
+          "Scan right at",
+          "the store shelf"
+        ],
+        "de-DE": [
+          "Scannen direkt",
+          "am Ladenregal"
+        ],
+        "es-ES": [
+          "Escanea directamente",
+          "en la tienda"
+        ],
+        "fr-FR": [
+          "Scannez directement",
+          "en magasin"
+        ],
+        "it": [
+          "Scansiona direttamente",
+          "in negozio"
+        ],
+        "pl": [
+          "Skanuj od razu",
+          "przy sklepowej półce"
+        ],
+        "pt-BR": [
+          "Escaneie direto",
+          "na prateleira da loja"
+        ],
+        "ru": [
+          "Сканируйте прямо",
+          "у полки в магазине"
+        ],
+        "zh-Hans": [
+          "在商店货架前",
+          "直接扫描"
+        ]
+      }
+    },
+    {
+      "name": "series",
+      "appearance": "light",
+      "layout": "card",
+      "photo": "shelf.jpg",
+      "photoTop": 45,
+      "setId": "71045",
+      "scan": "6472861",
+      "found": [
+        "6472860",
+        "6472861",
+        "6472863",
+        "6472866",
+        "6472868",
+        "6472870"
+      ],
+      "open": "series",
+      "headline": {
+        "en-US": [
+          "Tick off your",
+          "whole series"
+        ],
+        "de-DE": [
+          "Hak deine ganze",
+          "Serie ab"
+        ],
+        "es-ES": [
+          "Marca las figuras",
+          "de toda tu serie"
+        ],
+        "fr-FR": [
+          "Cochez toute",
+          "votre série"
+        ],
+        "it": [
+          "Spunta tutta",
+          "la tua serie"
+        ],
+        "pl": [
+          "Odhaczaj całą",
+          "swoją serię"
+        ],
+        "pt-BR": [
+          "Marque a sua",
+          "série inteira"
+        ],
+        "ru": [
+          "Отмечайте всю",
+          "свою серию"
+        ],
+        "zh-Hans": [
+          "整个系列",
+          "一一勾选"
+        ]
+      }
+    },
+    {
+      "name": "split-checklist",
+      "appearance": "dark",
+      "layout": "split",
+      "photo": "hand.jpg",
+      "photoTop": -131,
+      "setId": "71045",
+      "scan": "6472868",
+      "found": [
+        "6472860",
+        "6472861",
+        "6472862",
+        "6472863",
+        "6472864",
+        "6472866",
+        "6472868",
+        "6472870",
+        "6472871"
+      ],
+      "headline": {
+        "en-US": [
+          "Your series",
+          "always in view"
+        ],
+        "de-DE": [
+          "Deine Serie",
+          "immer im Blick"
+        ],
+        "es-ES": [
+          "Tu serie",
+          "siempre a la vista"
+        ],
+        "fr-FR": [
+          "Votre série",
+          "toujours sous les yeux"
+        ],
+        "it": [
+          "La tua serie",
+          "sempre sotto controllo"
+        ],
+        "pl": [
+          "Twoja seria",
+          "zawsze na widoku"
+        ],
+        "pt-BR": [
+          "Sua série",
+          "sempre à vista"
+        ],
+        "ru": [
+          "Вся серия",
+          "всегда перед глазами"
+        ],
+        "zh-Hans": [
+          "整个系列",
+          "始终一目了然"
+        ]
+      }
+    },
+    {
+      "name": "settings",
+      "appearance": "light",
+      "layout": "card",
+      "photo": "shelf.jpg",
+      "photoTop": 45,
+      "setId": "71045",
+      "scan": "6472861",
+      "found": [
+        "6472860",
+        "6472861",
+        "6472863",
+        "6472866",
+        "6472868",
+        "6472870"
+      ],
+      "open": "settings",
+      "headline": {
+        "en-US": [
+          "3 layouts, 9 languages",
+          "light and dark"
+        ],
+        "de-DE": [
+          "3 Layouts, 9 Sprachen",
+          "hell und dunkel"
+        ],
+        "es-ES": [
+          "3 diseños, 9 idiomas",
+          "claro y oscuro"
+        ],
+        "fr-FR": [
+          "3 dispositions, 9 langues",
+          "clair et sombre"
+        ],
+        "it": [
+          "3 layout, 9 lingue",
+          "chiaro e scuro"
+        ],
+        "pl": [
+          "3 układy, 9 języków",
+          "jasny i ciemny"
+        ],
+        "pt-BR": [
+          "3 layouts, 9 idiomas",
+          "claro e escuro"
+        ],
+        "ru": [
+          "3 макета, 9 языков",
+          "светлая и тёмная тема"
+        ],
+        "zh-Hans": [
+          "3 种布局，9 种语言",
+          "浅色与深色"
+        ]
+      }
+    }
+  ]
+}

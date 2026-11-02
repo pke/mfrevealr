@@ -1,0 +1,3 @@
+app_identifier("dev.dudesoft.mfrevealr")
+apple_id(ENV["APPLE_ID"])
+team_id("K9VADMGRA7")
