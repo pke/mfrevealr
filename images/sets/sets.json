@@ -1,0 +1,996 @@
+{
+  "42233": {
+    "Road Roller": [
+      6590734,
+      [
+        "6590742",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/mighty-machines-series-1.json"
+      ]
+    ],
+    "Wheel Loader": [
+      6590735,
+      [
+        "6590743",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/mighty-machines-series-1.json"
+      ]
+    ],
+    "Dump Truck": [
+      6590736,
+      [
+        "6590744",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/mighty-machines-series-1.json"
+      ]
+    ],
+    "Cement Truck": [
+      6590737,
+      [
+        "6590745",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/mighty-machines-series-1.json"
+      ]
+    ],
+    "Wrecking Ball Crane": [
+      6590738,
+      [
+        "6590746",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/mighty-machines-series-1.json"
+      ]
+    ],
+    "Excavator": [
+      6590739,
+      [
+        "6590747",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/mighty-machines-series-1.json"
+      ]
+    ],
+    "Mobile Crane": [
+      6590740,
+      [
+        "6590748",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/mighty-machines-series-1.json"
+      ]
+    ],
+    "Bulldozer": [
+      6590741,
+      [
+        "6590749",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/mighty-machines-series-1.json"
+      ]
+    ]
+  },
+  "71045": {
+    "Fierce Barbarian": [
+      6472860,
+      6471959,
+      6472893,
+      [
+        "025823",
+        "003642",
+        "001480",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgjp2x5",
+        "https://www.reddit.com/user/lego_coffee"
+      ],
+      [
+        "007229",
+        "005604",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgtyn0k",
+        "https://www.reddit.com/user/Lazy_Maximus"
+      ]
+    ],
+    "Fitness Instructor": [
+      6472861,
+      6471960,
+      6472894,
+      [
+        "003777",
+        "016149",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgjp2x5",
+        "https://www.reddit.com/user/lego_coffee"
+      ],
+      [
+        "009120",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgtyn0k",
+        "https://www.reddit.com/user/Lazy_Maximus"
+      ],
+      [
+        "003259",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgud19f",
+        "https://www.reddit.com/user/JeffLoren4U"
+      ],
+      [
+        "013356",
+        "005314"
+      ]
+    ],
+    "Mushroom Sprite": [
+      6472862,
+      6471961,
+      6472895,
+      [
+        "005312",
+        "006487",
+        "007835",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgjp2x5",
+        "https://www.reddit.com/user/lego_coffee"
+      ],
+      [
+        "000325",
+        "002447",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgtyn0k",
+        "https://www.reddit.com/user/Lazy_Maximus"
+      ],
+      [
+        "001080",
+        "001021",
+        "000888"
+      ]
+    ],
+    "Goatherd": [
+      6472863,
+      6471962,
+      6472896,
+      [
+        "021610",
+        "023639",
+        "005816",
+        "010370",
+        "010539",
+        "010677",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgjp2x5",
+        "https://www.reddit.com/user/lego_coffee"
+      ],
+      [
+        "021370",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgtyn0k",
+        "https://www.reddit.com/user/Lazy_Maximus"
+      ],
+      [
+        "020461",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgud19f",
+        "https://www.reddit.com/user/JeffLoren4U"
+      ],
+      [
+        "028131",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kiu13gc",
+        "https://www.reddit.com/user/pitaloaf"
+      ],
+      [
+        "010677",
+        "010539",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgbt1y1",
+        "https://www.reddit.com/user/lordofspearton"
+      ]
+    ],
+    "Harpy": [
+      6472864,
+      6471963,
+      6472897,
+      [
+        "009123",
+        "028146",
+        "011818",
+        "022048",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgjp2x5",
+        "https://www.reddit.com/user/lego_coffee"
+      ],
+      [
+        "002706",
+        "003521",
+        "003538",
+        "004154",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgtyn0k",
+        "https://www.reddit.com/user/Lazy_Maximus"
+      ],
+      [
+        "022048",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kflcxne",
+        "https://www.reddit.com/user/BSmith2711/"
+      ]
+    ],
+    "Train Kid": [
+      6472865,
+      6471964,
+      6472898,
+      [
+        "017923",
+        "016275",
+        "016825",
+        "017330",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgjp2x5",
+        "https://www.reddit.com/user/lego_coffee"
+      ],
+      [
+        "011071",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgtyn0k",
+        "https://www.reddit.com/user/Lazy_Maximus"
+      ],
+      [
+        "020917",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgud19f",
+        "https://www.reddit.com/user/JeffLoren4U"
+      ],
+      [
+        "005659"
+      ]
+    ],
+    "Film Noir Detective": [
+      6472866,
+      6471965,
+      6472899,
+      [
+        "009104",
+        "010769",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgjp2x5",
+        "https://www.reddit.com/user/lego_coffee"
+      ],
+      [
+        "022841",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgud19f",
+        "https://www.reddit.com/user/JeffLoren4U"
+      ]
+    ],
+    "Sprinter": [
+      6472867,
+      6471966,
+      6472900,
+      [
+        "000982",
+        "002646",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgjp2x5",
+        "https://www.reddit.com/user/lego_coffee"
+      ],
+      [
+        "013860",
+        "001974",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgud19f",
+        "https://www.reddit.com/user/JeffLoren4U"
+      ],
+      [
+        "008565",
+        "008454",
+        "008402"
+      ]
+    ],
+    "Pet Groomer": [
+      6472868,
+      6471967,
+      6472901,
+      [
+        "027694",
+        "006039",
+        "015615",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgjp2x5",
+        "https://www.reddit.com/user/lego_coffee"
+      ],
+      [
+        "003840",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgtyn0k",
+        "https://www.reddit.com/user/Lazy_Maximus"
+      ],
+      [
+        "012078",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kuaa2ar",
+        "https://www.reddit.com/user/drk90mad"
+      ],
+      [
+        "027614",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgud19f",
+        "https://www.reddit.com/user/JeffLoren4U"
+      ],
+      [
+        "015615",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kflcxne",
+        "https://www.reddit.com/user/BSmith2711/"
+      ]
+    ],
+    "Triceratops Costume Fan": [
+      6472869,
+      6471968,
+      6472902,
+      6472902,
+      [
+        "012065",
+        "012633",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgjp2x5",
+        "https://www.reddit.com/user/lego_coffee"
+      ],
+      [
+        "023707",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgtyn0k",
+        "https://www.reddit.com/user/Lazy_Maximus"
+      ],
+      [
+        "021006",
+        "023176",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgud19f",
+        "https://www.reddit.com/user/JeffLoren4U"
+      ],
+      [
+        "012633",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kflcxne",
+        "https://www.reddit.com/user/BSmith2711/"
+      ],
+      [
+        "015205",
+        "014384",
+        "014364",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgk3c64",
+        "https://www.reddit.com/user/SmartSheepherder4109"
+      ]
+    ],
+    "E-Sports Gamer": [
+      6472870,
+      6471969,
+      6472903,
+      6472903,
+      [
+        "003377",
+        "019487",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgjp2x5",
+        "https://www.reddit.com/user/lego_coffee"
+      ],
+      [
+        "011848",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgtyn0k",
+        "https://www.reddit.com/user/Lazy_Maximus"
+      ],
+      [
+        "013270",
+        "014046",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kuaa2ar",
+        "https://www.reddit.com/user/drk90mad"
+      ],
+      [
+        "016660",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgud19f",
+        "https://www.reddit.com/user/JeffLoren4U"
+      ],
+      [
+        "019487",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kflcxne",
+        "https://www.reddit.com/user/BSmith2711/"
+      ],
+      [
+        "024821",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgk3c64",
+        "https://www.reddit.com/user/SmartSheepherder4109"
+      ]
+    ],
+    "Vampire Knight": [
+      6472871,
+      6471970,
+      6472904,
+      [
+        "002527",
+        "012626",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgjp2x5",
+        "https://www.reddit.com/user/lego_coffee"
+      ],
+      [
+        "028609",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kgtyn0k",
+        "https://www.reddit.com/user/Lazy_Maximus"
+      ],
+      [
+        "012626",
+        "https://www.reddit.com/r/lego/comments/18oujyu/comment/kflcxne",
+        "https://www.reddit.com/user/BSmith2711/"
+      ]
+    ]
+  },
+  "71046": {
+    "Blacktron Mutant": [
+      6484685,
+      6484917,
+      6484904
+    ],
+    "Ice Planet Explorer": [
+      6484686,
+      6484918,
+      6484905
+    ],
+    "Imposter": [
+      6484687,
+      6484919,
+      6484906
+    ],
+    "Robot Butler": [
+      6484688,
+      6484920,
+      6484907
+    ],
+    "Alien Beetlezoid": [
+      6484689,
+      6484921,
+      6484908
+    ],
+    "Retro Space Heroine": [
+      6484690,
+      6484922,
+      6484909
+    ],
+    "Nurse Android": [
+      6484691,
+      6484923,
+      6484910
+    ],
+    "Flying Saucer Costume Fan": [
+      6484692,
+      6484924,
+      6484911
+    ],
+    "M-Tron Powerlifter": [
+      6484693,
+      6484925,
+      6484912
+    ],
+    "Alien Tourist": [
+      6484694,
+      6484926,
+      6484914
+    ],
+    "Orion": [
+      6484695,
+      6484927,
+      6484915
+    ],
+    "Spacewalking Astronaut": [
+      6484696,
+      6484928,
+      6484916
+    ]
+  },
+  "71047": {
+    "Dwarf Barbarian": [
+      6506754,
+      6502839,
+      6506740
+    ],
+    "Gith Warlock": [
+      6506757,
+      6502842,
+      6506743
+    ],
+    "Tiefling Sorcerer": [
+      6506751,
+      6502836,
+      6506737
+    ],
+    "Dragonborn Paladin": [
+      6506755,
+      6502840,
+      6506741
+    ],
+    "Halfling Druid": [
+      6506753,
+      6502838,
+      6506739
+    ],
+    "Aarakocra Ranger": [
+      6506756,
+      6502841,
+      6506742
+    ],
+    "Mind Flayer": [
+      6506758,
+      6502843,
+      6506744
+    ],
+    "Strahd von Zarovich": [
+      6506760,
+      6502845,
+      6506746
+    ],
+    "Elf Bard": [
+      6506752,
+      6502837,
+      6506738
+    ],
+    "The Lady of Pain": [
+      6506759,
+      6502844,
+      6506745
+    ],
+    "Szass Tam": [
+      6506762,
+      6502847,
+      6506748
+    ],
+    "Tasha the Witch Queen": [
+      6506761,
+      6502846,
+      6506747
+    ]
+  },
+  "71048": {
+    "Hamster Costume Fan": [
+      6522982,
+      6522994,
+      6522667
+    ],
+    "Wolfpack Beastmaster": [
+      6522981,
+      6522993,
+      6522666
+    ],
+    "Jetpack Racer": [
+      6522986,
+      6522998,
+      6522671
+    ],
+    "Astronomer Kid": [
+      6522989,
+      6523001,
+      6522674
+    ],
+    "Plush Toy Collector": [
+      6522991,
+      6523003,
+      6522676
+    ],
+    "Pterodactyl Costume Fan": [
+      6522988,
+      6523000,
+      6522673
+    ],
+    "Longboarder": [
+      6522983,
+      6522995,
+      6522668
+    ],
+    "Bogeyman": [
+      6522992,
+      6523004,
+      6522677
+    ],
+    "Cupid": [
+      6522985,
+      6522997,
+      6522670
+    ],
+    "Pirate Quartermaster": [
+      6522987,
+      6522999,
+      6522672
+    ],
+    "Cat Lover": [
+      6522990,
+      6523002,
+      6522675
+    ],
+    "Steampunk Inventor": [
+      6522984,
+      6522996,
+      6522669
+    ]
+  },
+  "71049": {
+    "RB20": [
+      6536842,
+      6538306,
+      6538426
+    ],
+    "Mercedes-AMG": [
+      6536843,
+      6538307,
+      6538427
+    ],
+    "Ferrari": [
+      6536841,
+      6538305,
+      6538425
+    ],
+    "McLaren": [
+      6536850,
+      6538314,
+      6538434
+    ],
+    "Aston Martin": [
+      6536844,
+      6538308,
+      6538428
+    ],
+    "Alpine": [
+      6536847,
+      6538311,
+      6538431
+    ],
+    "Williams": [
+      6536848,
+      6538312,
+      6538432
+    ],
+    "VCARB": [
+      6536845,
+      6538309,
+      6538429
+    ],
+    "Sauber": [
+      6536846,
+      6538310,
+      6538430
+    ],
+    "Haas": [
+      6536849,
+      6538313,
+      6538433
+    ],
+    "F1 ACADEMY Car": [
+      6536852,
+      6538316,
+      6538436
+    ],
+    "F1 Car": [
+      6536851,
+      6538315,
+      6538435
+    ]
+  },
+  "71050": {
+    "Miles Morales / Spider-Man": [
+      6568959,
+      6615990,
+      [
+        "6568947",
+        "6564838",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/spiderman-spiderverse.json"
+      ]
+    ],
+    "Hobie Brown / Spider-Punk": [
+      6568964,
+      6615995,
+      [
+        "6568952",
+        "6564843",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/spiderman-spiderverse.json"
+      ]
+    ],
+    "Miles G. Morales / Prowler": [
+      6568963,
+      6615994,
+      [
+        "6568951",
+        "6564842",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/spiderman-spiderverse.json"
+      ]
+    ],
+    "Gwen Stacy / Spider-Gwen": [
+      6568962,
+      6615993,
+      [
+        "6568950",
+        "6564841",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/spiderman-spiderverse.json"
+      ]
+    ],
+    "Miguel O'Hara / Spider-Man 2099": [
+      6568960,
+      6615991,
+      [
+        "6568948",
+        "6564839",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/spiderman-spiderverse.json"
+      ]
+    ],
+    "Pavitr Prabhakar / Spider-Man India": [
+      6568965,
+      6615996,
+      [
+        "6568953",
+        "6564844",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/spiderman-spiderverse.json"
+      ]
+    ],
+    "Petra Parker / Cyborg Spider-Woman": [
+      6568968,
+      6615999,
+      [
+        "6568956",
+        "6564847",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/spiderman-spiderverse.json"
+      ]
+    ],
+    "Charlotte Webber / Sun-Spider": [
+      6568961,
+      6615992,
+      [
+        "6568949",
+        "6564840",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/spiderman-spiderverse.json"
+      ]
+    ],
+    "Margo Kess / Spider-Byte": [
+      6568967,
+      6615998,
+      [
+        "6568955",
+        "6564846",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/spiderman-spiderverse.json"
+      ]
+    ],
+    "Peter B. Parker / Spider-Man & May 'Mayday' Parker": [
+      6568966,
+      6615997,
+      [
+        "6568954",
+        "6564845",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/spiderman-spiderverse.json"
+      ]
+    ],
+    "Patrick O'Hara / Web-Slinger": [
+      6568969,
+      6616000,
+      [
+        "6568957",
+        "6564848",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/spiderman-spiderverse.json"
+      ]
+    ],
+    "Peter Parker / Werewolf Spider-Man": [
+      6568970,
+      6616001,
+      [
+        "6568958",
+        "6564849",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/spiderman-spiderverse.json"
+      ]
+    ]
+  },
+  "71051": {
+    "Peacock Suit Fan": [
+      6584394,
+      6584381,
+      [
+        "6576503",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-28.json"
+      ]
+    ],
+    "Cat Suit Fan": [
+      6584395,
+      6584382,
+      [
+        "6576504",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-28.json"
+      ]
+    ],
+    "Goldfish Suit Fan": [
+      6584392,
+      6584379,
+      [
+        "6576501",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-28.json"
+      ]
+    ],
+    "Monkey Suit Fan": [
+      6584398,
+      6584385,
+      [
+        "6576507",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-28.json"
+      ]
+    ],
+    "Frog Suit Fan": [
+      6584390,
+      6584377,
+      [
+        "6576499",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-28.json"
+      ]
+    ],
+    "Koala Suit Fan": [
+      6584396,
+      6584383,
+      [
+        "6576505",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-28.json"
+      ]
+    ],
+    "Dalmatian Suit Fan": [
+      6584391,
+      6584378,
+      [
+        "6576500",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-28.json"
+      ]
+    ],
+    "Crocodile Suit Fan": [
+      6584389,
+      6584376,
+      [
+        "6576498",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-28.json"
+      ]
+    ],
+    "Dolphin Suit Fan": [
+      6584397,
+      6584384,
+      [
+        "6576506",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-28.json"
+      ]
+    ],
+    "Bunny Suit Fan": [
+      6584393,
+      6584380,
+      [
+        "6576502",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-28.json"
+      ]
+    ],
+    "Lion Suit Fan": [
+      6584388,
+      6584375,
+      [
+        "6576497",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-28.json"
+      ]
+    ],
+    "Parrot Suit Fan": [
+      6584387,
+      6584374,
+      [
+        "6576496",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-28.json"
+      ]
+    ]
+  },
+  "71052": {
+    "Robot T. rex": [
+      6603331,
+      6605257,
+      [
+        "6605270",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-29.json"
+      ]
+    ],
+    "Marine Biologist": [
+      6603321,
+      6605247,
+      [
+        "6605260",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-29.json"
+      ]
+    ],
+    "BIONICLE Cosplayer": [
+      6603325,
+      6605251,
+      [
+        "6605264",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-29.json"
+      ]
+    ],
+    "Monster Hunter": [
+      6603328,
+      6605254,
+      [
+        "6605267",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-29.json"
+      ]
+    ],
+    "Boba Cup Fan": [
+      6603324,
+      6605250,
+      [
+        "6605263",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-29.json"
+      ]
+    ],
+    "Trash Monster": [
+      6603330,
+      6605256,
+      [
+        "6605269",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-29.json"
+      ]
+    ],
+    "Chocolatier": [
+      6603323,
+      6605249,
+      [
+        "6605262",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-29.json"
+      ]
+    ],
+    "Tuba Player": [
+      6603322,
+      6605248,
+      [
+        "6605261",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-29.json"
+      ]
+    ],
+    "Football Goalkeeper": [
+      6603320,
+      6605246,
+      [
+        "6605259",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-29.json"
+      ]
+    ],
+    "Cute Witch": [
+      6603329,
+      6605255,
+      [
+        "6605268",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-29.json"
+      ]
+    ],
+    "Mysterious Ronin": [
+      6603327,
+      6605253,
+      [
+        "6605266",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-29.json"
+      ]
+    ],
+    "Unicorn Elf": [
+      6603326,
+      6605252,
+      [
+        "6605265",
+        "https://github.com/le0pard/lego-scanner/blob/main/src/lib/data/series-29.json"
+      ]
+    ]
+  },
+  "71053": {
+    "Thelonious": [
+      6634903,
+      6627608,
+      6634882
+    ],
+    "Puss in Boots": [
+      6634905,
+      6627610,
+      6634884
+    ],
+    "Gingy": [
+      6634906,
+      6627611,
+      6634885
+    ],
+    "Shrek": [
+      6634901,
+      6627606,
+      6634880
+    ],
+    "Dragon": [
+      6634900,
+      6627605,
+      6634879
+    ],
+    "Fiona and Donkey": [
+      6634902,
+      6627607,
+      6634881
+    ],
+    "Merlin": [
+      6634907,
+      6627612,
+      6634886
+    ],
+    "Pinocchio": [
+      6634910,
+      6627615,
+      6634889
+    ],
+    "Big Bad Wolf": [
+      6634904,
+      6627609,
+      6634883
+    ],
+    "Lord Farquaad": [
+      6634908,
+      6627613,
+      6634887
+    ],
+    "Fairy Godmother": [
+      6634909,
+      6627614,
+      6634888
+    ],
+    "Prince Charming": [
+      6634911,
+      6627616,
+      6634890
+    ]
+  }
+}
