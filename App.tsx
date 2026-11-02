@@ -137,13 +137,20 @@ function PermissionDenied({onRequest}: {onRequest: () => void}) {
   );
 }
 
+// How far the reveal card stays off the screen's sides; the viewfinder's
+// corners line up with it.
+const CARD_INSET = 12;
+
 /**
- * Scanner corner brackets, matching the app icon. Fits the space the reveal
- * card leaves, so the corners never slide underneath it.
+ * Scanner corner brackets, matching the app icon. As wide as the reveal card
+ * and fitting the space it leaves, so the corners never slide underneath it.
  */
 function Viewfinder() {
   const [area, setArea] = React.useState({width: 0, height: 0});
-  const width = Math.min(area.width * 0.62, 280, (area.height * 0.85) / 0.75);
+  const width = Math.min(
+    area.width - 2 * CARD_INSET,
+    (area.height * 0.85) / 0.75,
+  );
   const frame = {width, height: width * 0.75};
   const frameRef = React.useRef<Measurable>(null);
   // Its corners show once the splash's have flown into them.
@@ -1652,7 +1659,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   card: {
-    marginHorizontal: 12,
+    marginHorizontal: CARD_INSET,
     marginBottom: 12,
     borderRadius: 24,
     padding: 20,
