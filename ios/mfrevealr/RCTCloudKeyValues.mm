@@ -8,25 +8,32 @@
 @interface RCTCloudKeyValues : NativeCloudKeyValuesSpecBase <NativeCloudKeyValuesSpec>
 @end
 
-@implementation RCTCloudKeyValues
+@implementation RCTCloudKeyValues {
+  BOOL _watching;
+}
 
 + (NSString *)moduleName
 {
   return @"CloudKeyValues";
 }
 
-- (instancetype)init
+// React Native makes two instances: RCTModuleProviders keeps one only to ask
+// it for the JS module, and the other is the one JS talks to. Only that one,
+// once connected for its events, watches iCloud.
+- (void)setEventEmitterCallback:(EventEmitterCallbackWrapper *)eventEmitterCallbackWrapper
 {
-  if (self = [super init]) {
-    NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(storeDidChange:)
-                                                 name:NSUbiquitousKeyValueStoreDidChangeExternallyNotification
-                                               object:store];
-    // Fetches what other devices changed while the app wasn't running.
-    [store synchronize];
+  [super setEventEmitterCallback:eventEmitterCallbackWrapper];
+  if (_watching) {
+    return;
   }
-  return self;
+  _watching = YES;
+  NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(storeDidChange:)
+                                               name:NSUbiquitousKeyValueStoreDidChangeExternallyNotification
+                                             object:store];
+  // Fetches what other devices changed while the app wasn't running.
+  [store synchronize];
 }
 
 - (void)dealloc
