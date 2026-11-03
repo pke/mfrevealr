@@ -19,6 +19,10 @@ export function createSightings(holdMs = 1500, now: () => number = Date.now) {
       }
       return before === undefined || time - before > holdMs;
     },
+    /** Forgets a box, so its next sighting counts again. */
+    forget(code: string) {
+      lastSeen.delete(code);
+    },
     /** Forgets every box, so the next sighting counts again. */
     clear() {
       lastSeen.clear();

@@ -44,3 +44,11 @@ test('Clearing forgets every box', () => {
   sightings.clear();
   expect(sightings.see('A')).toBe(true);
 });
+
+test('A forgotten box counts again while still in view', () => {
+  const sightings = createSightings(1500, () => 0);
+  expect(sightings.see('6472861')).toBe(true);
+  expect(sightings.see('6472861')).toBe(false);
+  sightings.forget('6472861');
+  expect(sightings.see('6472861')).toBe(true);
+});

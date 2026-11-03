@@ -51,3 +51,34 @@ export function classifyScan(
   }
   return other.length ? {kind: 'ignored'} : undefined;
 }
+
+/**
+ * Scans while a sheet may hide the camera. Codes are still recorded behind
+ * it, so a box that stays in view through it never counts twice; but one that
+ * came into view meanwhile counts as soon as the camera shows again.
+ */
+export function createScanGate(sightings: ReturnType<typeof createSightings>) {
+  const unseen = new Set<string>();
+  return {
+    scan(
+      values: (string | undefined)[],
+      {hidden, deliberate = false}: {hidden: boolean; deliberate?: boolean},
+    ): ScanOutcome | undefined {
+      const outcome = classifyScan(values, sightings, deliberate);
+      if (!hidden) {
+        return outcome;
+      }
+      if (outcome?.kind === 'figures') {
+        outcome.entries.forEach(entry => unseen.add(entry.code));
+      } else if (outcome?.kind === 'unknown') {
+        unseen.add(scannedCode(outcome.value)!);
+      }
+      return undefined;
+    },
+    /** The camera shows again: what came into view behind it counts. */
+    show() {
+      unseen.forEach(code => sightings.forget(code));
+      unseen.clear();
+    },
+  };
+}

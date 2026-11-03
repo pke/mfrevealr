@@ -63,7 +63,7 @@ import {
   scannedCode,
 } from './resolveCode';
 import {Layout, Settings, useSettings} from './settings';
-import {classifyScan} from './scanOutcome';
+import {createScanGate} from './scanOutcome';
 import {createSightings} from './sightings';
 import {
   getCollection,
@@ -1569,7 +1569,14 @@ function Scanner({
   // The camera keeps running behind the sheets, which leave it visible at the
   // top, but scans wait until they close so nothing changes underneath.
   const sheetOpenRef = React.useRef(false);
-  sheetOpenRef.current = seriesOpen || settingsOpen || collectionOpen;
+  const sheetOpen = seriesOpen || settingsOpen || collectionOpen;
+  sheetOpenRef.current = sheetOpen;
+  const scanGate = React.useRef(createScanGate(sightings)).current;
+  React.useEffect(() => {
+    if (!sheetOpen) {
+      scanGate.show();
+    }
+  }, [sheetOpen, scanGate]);
 
   const setIds = React.useMemo(
     () => getSetIds(currentSetId) || [],
@@ -1591,10 +1598,11 @@ function Scanner({
   // `deliberate` scans (the test camera) are boxes held up on purpose, so
   // they count even when the same box was seen just before.
   const onScan = (values: (string | undefined)[], deliberate = false) => {
-    // Recorded also behind a sheet, so a box that stays in view never counts
-    // again once it closes.
-    const outcome = classifyScan(values, sightings, deliberate);
-    if (sheetOpenRef.current || !outcome) {
+    const outcome = scanGate.scan(values, {
+      hidden: sheetOpenRef.current,
+      deliberate,
+    });
+    if (!outcome) {
       return;
     }
     if (outcome.kind === 'ignored') {

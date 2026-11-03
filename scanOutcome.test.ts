@@ -1,4 +1,4 @@
-import {classifyScan} from './scanOutcome';
+import {classifyScan, createScanGate} from './scanOutcome';
 import {createSightings} from './sightings';
 
 const FITNESS = '6472861 2401'; // Series 25
@@ -82,4 +82,36 @@ test('An unknown box wins over a code that is no box', () => {
 
 test('Empty reads are nothing at all', () => {
   expect(classifyScan([undefined, '  '], setup())).toBeUndefined();
+});
+
+test('A box come into view behind a sheet counts once it closes', () => {
+  const gate = createScanGate(setup());
+  // The sheet covers the camera; the box is seen, but nothing changes.
+  expect(gate.scan([FITNESS], {hidden: true})).toBeUndefined();
+  expect(gate.scan([FITNESS], {hidden: true})).toBeUndefined();
+  gate.show();
+  // Still in view as the sheet closes: now it counts, once.
+  expect(gate.scan([FITNESS], {hidden: false})).toMatchObject({
+    kind: 'figures',
+    entries: [{code: '6472861'}],
+  });
+  expect(gate.scan([FITNESS], {hidden: false})).toBeUndefined();
+});
+
+test('A box counted before a sheet opened does not count again', () => {
+  const gate = createScanGate(setup());
+  expect(gate.scan([FITNESS], {hidden: false})).toBeDefined();
+  expect(gate.scan([FITNESS], {hidden: true})).toBeUndefined();
+  gate.show();
+  expect(gate.scan([FITNESS], {hidden: false})).toBeUndefined();
+});
+
+test('A box the catalog lacks seen behind a sheet is looked up after', () => {
+  const gate = createScanGate(setup());
+  expect(gate.scan([UNKNOWN], {hidden: true})).toBeUndefined();
+  gate.show();
+  expect(gate.scan([UNKNOWN], {hidden: false})).toEqual({
+    kind: 'unknown',
+    value: UNKNOWN,
+  });
 });
