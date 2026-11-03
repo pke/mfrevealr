@@ -8,6 +8,8 @@ NEW SERIES
 NEW DESIGN
 • Scan a box and the figure is revealed on a big card
 • Tap it to see the whole series and tick off what you have
+• Your collection: every series in one list, the ones you've started first
+• Your collection is saved and synced across your devices with iCloud
 • Pick one of three layouts: reveal card, split checklist or slim strip
 • Light and dark mode, following your phone or set by you
 • Sharper, high-resolution images of every figure

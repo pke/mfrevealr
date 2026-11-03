@@ -8,6 +8,8 @@ NUOVE SERIE
 NUOVO DESIGN
 • Scansiona una scatola e la minifigure appare su una grande scheda
 • Toccala per vedere tutta la serie e spuntare quelle che hai già
+• La tua collezione: tutte le serie in un elenco, prima quelle iniziate
+• La collezione viene salvata e sincronizzata tra i tuoi dispositivi con iCloud
 • Scegli tra tre layout: scheda rivelazione, lista divisa o striscia compatta
 • Modalità chiara e scura, come il telefono o a tua scelta
 • Immagini più nitide e ad alta risoluzione di ogni minifigure

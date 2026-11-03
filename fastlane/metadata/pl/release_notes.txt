@@ -8,6 +8,8 @@ NOWE SERIE
 NOWY WYGLĄD
 • Zeskanuj opakowanie, a figurka pojawi się na dużej karcie
 • Dotknij jej, aby zobaczyć całą serię i odhaczyć posiadane figurki
+• Twoja kolekcja: wszystkie serie na jednej liście, najpierw rozpoczęte
+• Kolekcja jest zapisywana i synchronizowana między urządzeniami przez iCloud
 • Trzy układy do wyboru: karta odsłony, podzielona lista lub wąski pasek
 • Tryb jasny i ciemny, jak w telefonie albo według Twojego wyboru
 • Ostrzejsze zdjęcia wszystkich figurek w wysokiej rozdzielczości

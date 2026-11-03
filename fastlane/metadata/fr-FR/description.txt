@@ -6,7 +6,7 @@ COMMENT ÇA MARCHE
 • La figurine contenue apparaît instantanément
 
 COMPLÉTEZ VOTRE SÉRIE
-Chaque figurine scannée est cochée. Touchez la carte pour voir toute la série : celles que vous avez déjà et celles qui vous manquent. Vous pouvez aussi cocher ou décocher des figurines à la main à tout moment.
+Chaque figurine scannée est cochée. Touchez la carte pour voir toute la série : celles que vous avez déjà et celles qui vous manquent. Vous pouvez aussi cocher ou décocher des figurines à la main à tout moment. Votre collection affiche toutes les séries, en commençant par celles que vous avez entamées. Ouvrez-en une pour cocher les figurines obtenues sans les scanner. Elle est enregistrée sur votre téléphone et synchronisée avec vos autres appareils via iCloud.
 
 À VOTRE FAÇON
 • Trois dispositions : une grande carte de révélation, une liste partagée avec toute la série toujours sous les yeux, ou un bandeau compact qui laisse la caméra presque libre

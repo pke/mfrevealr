@@ -8,6 +8,8 @@ NUEVAS SERIES
 NUEVO DISEÑO
 • Escanea una caja y la figura aparece en una tarjeta grande
 • Tócala para ver toda la serie y marcar las que ya tienes
+• Tu colección: todas las series en una lista, primero las que has empezado
+• Tu colección se guarda y se sincroniza entre tus dispositivos con iCloud
 • Elige entre tres diseños: tarjeta de revelación, lista dividida o tira compacta
 • Modo claro y oscuro, según tu teléfono o a tu elección
 • Imágenes más nítidas y en alta resolución de todas las figuras

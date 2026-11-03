@@ -8,6 +8,8 @@ NOUVELLES SÉRIES
 NOUVEAU DESIGN
 • Scannez une boîte et la figurine apparaît sur une grande carte
 • Touchez-la pour voir toute la série et cocher celles que vous avez
+• Votre collection : toutes les séries dans une liste, celles entamées en premier
+• Votre collection est enregistrée et synchronisée entre vos appareils avec iCloud
 • Trois dispositions au choix : carte de révélation, liste partagée ou bandeau compact
 • Mode clair et sombre, comme sur votre téléphone ou selon votre choix
 • Des images plus nettes, en haute résolution, de chaque figurine

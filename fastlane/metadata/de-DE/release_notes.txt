@@ -8,6 +8,8 @@ NEUE SERIEN
 NEUES DESIGN
 • Packung scannen, und die Figur erscheint auf einer großen Karte
 • Antippen zeigt die ganze Serie, dort hakst du ab, was du schon hast
+• Deine Sammlung: alle Serien in einer Liste, angefangene zuerst
+• Die Sammlung wird gespeichert und per iCloud zwischen deinen Geräten abgeglichen
 • Drei Layouts zur Wahl: Enthüllungskarte, geteilte Checkliste oder schmaler Streifen
 • Heller und dunkler Modus, wie am Telefon oder selbst gewählt
 • Schärfere, hochaufgelöste Bilder aller Figuren

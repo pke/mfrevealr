@@ -6,7 +6,7 @@ JAK TO DZIAŁA
 • Figurka ze środka pojawia się natychmiast
 
 SKOMPLETUJ SERIĘ
-Każda zeskanowana figurka zostaje odhaczona. Dotknij karty, aby zobaczyć całą serię: co już masz, a czego jeszcze brakuje. Figurki możesz też w każdej chwili odhaczać ręcznie.
+Każda zeskanowana figurka zostaje odhaczona. Dotknij karty, aby zobaczyć całą serię: co już masz, a czego jeszcze brakuje. Figurki możesz też w każdej chwili odhaczać ręcznie. Twoja kolekcja pokazuje wszystkie serie, najpierw te rozpoczęte. Otwórz dowolną, aby odhaczyć figurki zdobyte bez skanowania. Kolekcja zostaje w telefonie i synchronizuje się z innymi urządzeniami przez iCloud.
 
 PO SWOJEMU
 • Trzy układy: duża karta odsłony, podzielona lista z całą serią zawsze na widoku lub wąski pasek, który zostawia aparat prawie wolny
