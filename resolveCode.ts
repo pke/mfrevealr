@@ -119,6 +119,11 @@ export function scannedCode(value: string | undefined) {
   return figCode && /^\d{7}$/.test(figCode) ? figCode : undefined;
 }
 
+/** Every series the catalog knows, in its order. */
+export function getSeriesIds() {
+  return [...BY_SET.keys()];
+}
+
 export function getSetIds(setId: string) {
   return BY_SET.get(setId);
 }

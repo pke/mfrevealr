@@ -30,6 +30,7 @@ const es: Translation = {
   collection: {
     title: 'Colección',
     empty: 'Escanea una caja para empezar tu colección.',
+    notStarted: 'Aún sin empezar',
   },
   series: {
     fallback: 'Serie',
@@ -68,6 +69,8 @@ const es: Translation = {
     title: 'Catálogo',
     version: 'Figuras a fecha de {{date}}',
     check: 'Buscar actualizaciones',
+    pullMore: 'Desliza más para buscar actualizaciones',
+    pullRelease: 'Suelta para buscar actualizaciones',
     checking: 'Comprobando…',
     current: 'Está al día',
     updated: 'Actualizado',

@@ -11,9 +11,9 @@ import {
 } from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {appVersion} from './appVersion';
+import {CatalogCheck, revisionDate} from './CatalogCheck';
 import type {CatalogProgress, UpdateResult} from './catalogStore';
 import {LANGUAGE_NAMES, LANGUAGES, LanguagePreference} from './languages';
-import {ProgressBar} from './ProgressBar';
 import type {Layout, Settings} from './settings';
 import {Insets, Sheet} from './Sheet';
 import {ThemePreference, usePalette} from './theme';
@@ -25,26 +25,6 @@ const THEMES = [
 ] as const satisfies readonly {value: ThemePreference; label: string}[];
 
 const LAYOUTS: readonly Layout[] = ['card', 'split', 'strip'];
-
-/** The catalog revision, yyyyMMddHHmm in UTC, as a date in `language`. */
-function revisionDate(revision: number, language: string) {
-  const digits = String(revision);
-  const date = new Date(
-    Date.UTC(
-      Number(digits.slice(0, 4)),
-      Number(digits.slice(4, 6)) - 1,
-      Number(digits.slice(6, 8)),
-    ),
-  );
-  try {
-    return date.toLocaleDateString(language, {
-      dateStyle: 'medium',
-      timeZone: 'UTC',
-    });
-  } catch {
-    return date.toISOString().slice(0, 10);
-  }
-}
 
 /** A tiny sketch of each layout: camera in grey, panels in white. */
 function LayoutPreview({layout}: {layout: Layout}) {
@@ -176,9 +156,6 @@ export function SettingsSheet({
 }) {
   const palette = usePalette();
   const {t, i18n} = useTranslation();
-  const [catalogStatus, setCatalogStatus] = React.useState<
-    'checking' | UpdateResult
-  >();
   // Collapsed until opened; stays as left while the app runs.
   const [open, setOpen] = React.useState<ReadonlySet<SectionId>>(new Set());
   const toggle = (id: SectionId) => () => {
@@ -191,10 +168,6 @@ export function SettingsSheet({
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
-  };
-  const checkCatalog = () => {
-    setCatalogStatus('checking');
-    onCheckCatalog().then(setCatalogStatus);
   };
   const catalogDate = t('catalog.version', {
     date: revisionDate(catalogRevision, i18n.language),
@@ -219,46 +192,11 @@ export function SettingsSheet({
         open={open.has('catalog')}
         onToggle={toggle('catalog')}>
         <View style={styles.catalogBody}>
-          <View style={styles.catalog}>
-            <Text style={[styles.catalogText, {color: palette.text}]}>
-              {catalogDate}
-            </Text>
-            <Pressable
-              testID="catalog-check"
-              onPress={checkCatalog}
-              disabled={catalogStatus === 'checking'}
-              accessibilityRole="button"
-              accessibilityState={{busy: catalogStatus === 'checking'}}
-              hitSlop={8}>
-              <Text style={[styles.catalogButton, {color: palette.accent}]}>
-                {t('catalog.check')}
-              </Text>
-            </Pressable>
-          </View>
-          {catalogProgress && (
-            <View style={styles.progress}>
-              <ProgressBar
-                testID="catalog-progress"
-                done={
-                  catalogProgress.phase === 'downloading'
-                    ? catalogProgress.done
-                    : undefined
-                }
-                total={
-                  catalogProgress.phase === 'downloading'
-                    ? catalogProgress.total
-                    : undefined
-                }
-              />
-            </View>
-          )}
-          {catalogStatus && (
-            <Text
-              accessibilityLiveRegion="polite"
-              style={[styles.catalogStatus, {color: palette.secondary}]}>
-              {t(`catalog.${catalogStatus}`)}
-            </Text>
-          )}
+          <CatalogCheck
+            revision={catalogRevision}
+            progress={catalogProgress}
+            onCheck={onCheckCatalog}
+          />
         </View>
       </Section>
       <Section id="appearance" title={t('settings.appearance')}>
@@ -443,9 +381,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     lineHeight: 24,
   },
-  progress: {
-    marginTop: 10,
-  },
   segments: {
     flexDirection: 'row',
     borderRadius: 10,
@@ -468,24 +403,6 @@ const styles = StyleSheet.create({
   },
   catalogBody: {
     paddingBottom: 12,
-  },
-  catalog: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  catalogText: {
-    flexShrink: 1,
-    fontSize: 15,
-  },
-  catalogButton: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  catalogStatus: {
-    fontSize: 14,
-    marginTop: 4,
   },
   chips: {
     flexDirection: 'row',

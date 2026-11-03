@@ -27,6 +27,7 @@ const en = {
   collection: {
     title: 'Collection',
     empty: 'Scan a box to start your collection.',
+    notStarted: 'Not started yet',
   },
   series: {
     fallback: 'Series',
@@ -65,6 +66,8 @@ const en = {
     title: 'Catalog',
     version: 'Figures as of {{date}}',
     check: 'Check for updates',
+    pullMore: 'Pull up more to check for updates',
+    pullRelease: 'Release to check for updates',
     checking: 'Checking…',
     current: 'Up to date',
     updated: 'Updated',

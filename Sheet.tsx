@@ -16,22 +16,32 @@ import {usePalette} from './theme';
 
 export type Insets = {top: number; bottom: number};
 
+// How far past the end of its list a sheet is pulled to tell `onPullUp`.
+const PULL = 60;
+
 /**
  * A bottom sheet sized to its content, sliding up over the camera; when the
  * content is taller than the screen, the whole sheet scrolls. Closes
  * with its button, a tap on the dimmed backdrop, a swipe down or Android back.
+ * With `onPullUp`, the list bounces once scrolled away from its top, and a
+ * pull well past its end calls it; `pullHint` shows below the end how far to
+ * pull.
  */
 export function Sheet({
   visible,
   insets,
   title,
   onClose,
+  onPullUp,
+  pullHint,
   children,
 }: {
   visible: boolean;
   insets: Insets;
   title: string;
   onClose: () => void;
+  onPullUp?: () => void;
+  pullHint?: {more: string; release: string};
   children: React.ReactNode;
 }) {
   const palette = usePalette();
@@ -40,6 +50,10 @@ export function Sheet({
   const [mounted, setMounted] = React.useState(false);
   const sheetY = React.useRef(new Animated.Value(height)).current;
   const scrollY = React.useRef(0);
+  // At its top the list never bounces: a pull down there closes the sheet.
+  const [scrolledAway, setScrolledAway] = React.useState(false);
+  // Pulled far enough past the end that letting go calls `onPullUp`.
+  const [pulledFar, setPulledFar] = React.useState(false);
   const opened = React.useRef(false);
   const closing = React.useRef(false);
 
@@ -156,10 +170,17 @@ export function Sheet({
           },
         ]}>
         <ScrollView
-          bounces={false}
+          bounces={Boolean(onPullUp) && scrolledAway}
           scrollEventThrottle={16}
           onScroll={event => {
             scrollY.current = event.nativeEvent.contentOffset.y;
+            setScrolledAway(scrollY.current > 0);
+            setPulledFar(pulledPastEnd(event.nativeEvent) > PULL);
+          }}
+          onScrollEndDrag={event => {
+            if (pulledPastEnd(event.nativeEvent) > PULL) {
+              onPullUp?.();
+            }
           }}
           contentContainerStyle={[
             sheetStyles.content,
@@ -188,10 +209,29 @@ export function Sheet({
             </Pressable>
           </View>
           {children}
+          {pullHint && (
+            <Text style={[sheetStyles.pullHint, {color: palette.secondary}]}>
+              {pulledFar ? pullHint.release : pullHint.more}
+            </Text>
+          )}
         </ScrollView>
       </Animated.View>
     </View>
   );
+}
+
+/** How far a list is pulled on past its end. */
+function pulledPastEnd({
+  contentOffset,
+  contentSize,
+  layoutMeasurement,
+}: {
+  contentOffset: {y: number};
+  contentSize: {height: number};
+  layoutMeasurement: {height: number};
+}) {
+  const end = Math.max(0, contentSize.height - layoutMeasurement.height);
+  return contentOffset.y - end;
 }
 
 export const sheetStyles = StyleSheet.create({
@@ -211,6 +251,16 @@ export const sheetStyles = StyleSheet.create({
   // sheet's edge.
   content: {
     paddingHorizontal: 16,
+  },
+  // Just past the end of the list, out of sight until pulled into view.
+  pullHint: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    paddingTop: 16,
+    textAlign: 'center',
+    fontSize: 15,
   },
   grabber: {
     alignSelf: 'center',

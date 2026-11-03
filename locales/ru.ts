@@ -30,6 +30,7 @@ const ru: Translation = {
   collection: {
     title: 'Коллекция',
     empty: 'Отсканируйте коробку, чтобы начать коллекцию.',
+    notStarted: 'Ещё не начаты',
   },
   series: {
     fallback: 'Серия',
@@ -68,6 +69,8 @@ const ru: Translation = {
     title: 'Каталог',
     version: 'Фигурки по состоянию на {{date}}',
     check: 'Проверить обновления',
+    pullMore: 'Потяните ещё, чтобы проверить обновления',
+    pullRelease: 'Отпустите, чтобы проверить обновления',
     checking: 'Проверка…',
     current: 'Актуальная версия',
     updated: 'Обновлено',

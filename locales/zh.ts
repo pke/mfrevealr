@@ -29,6 +29,7 @@ const zh: Translation = {
   collection: {
     title: '收藏',
     empty: '扫描一个包装盒，开始你的收藏。',
+    notStarted: '尚未开始',
   },
   series: {
     fallback: '系列',
@@ -67,6 +68,8 @@ const zh: Translation = {
     title: '目录',
     version: '人仔数据更新于 {{date}}',
     check: '检查更新',
+    pullMore: '继续上拉以检查更新',
+    pullRelease: '松开以检查更新',
     checking: '正在检查…',
     current: '已是最新',
     updated: '已更新',

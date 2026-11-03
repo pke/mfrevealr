@@ -148,3 +148,41 @@ test('without the reveal card, the search shows as a banner', async ({
   await expect(screen.getByText('New figures are here')).toBeVisible(DOWNLOAD);
   await expect(screen.getByTestId('strip-6634903')).toBeVisible();
 });
+
+test('the collection lists every series, and a check brings new ones', async ({
+  device,
+  screen,
+}) => {
+  test.skip(onPhysicalDevice(device), 'needs the catalog server');
+  await scan(device, BOX.fitness);
+  await screen.getByTestId('collection-button').tap();
+  await expect(screen.getByTestId('collection-71045')).toContainText('1 of 12');
+  await expect(screen.getByTestId('collection-not-started')).toBeVisible();
+  await expect(screen.getByTestId('collection-71046')).toContainText('0 of 12');
+  await expect(screen.getByTestId('collection-71053')).toBeHidden();
+  // Below every series, at the end of the list.
+  const check = screen.getByTestId('catalog-check');
+  await screen.scrollUntilVisible(check, {direction: 'down'});
+  server.serve('latest', {delay: 100});
+  await check.tap();
+  // The new series comes in just above the check, where the list ends.
+  const shrek = screen.getByTestId('collection-71053');
+  await expect(shrek).toBeVisible(DOWNLOAD);
+  await expect(shrek).toContainText('Shrek Series');
+});
+
+test('pulling the collection on past its end checks the catalog', async ({
+  device,
+  screen,
+}) => {
+  test.skip(onPhysicalDevice(device), 'needs the catalog server');
+  server.serve('latest', {delay: 100});
+  await screen.getByTestId('collection-button').tap();
+  // Scrolled down and on past the end: no button pressed.
+  await screen.swipe({from: {x: 200, y: 750}, to: {x: 200, y: 100}});
+  await screen.swipe({from: {x: 200, y: 750}, to: {x: 200, y: 100}});
+  await screen.swipe({from: {x: 200, y: 750}, to: {x: 200, y: 100}});
+  const shrek = screen.getByTestId('collection-71053');
+  await expect(shrek).toBeVisible(DOWNLOAD);
+  await expect(shrek).toContainText('Shrek Series');
+});

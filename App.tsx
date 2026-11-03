@@ -1957,6 +1957,9 @@ function Scanner({
         insets={insets}
         collection={collection}
         started={started}
+        catalogRevision={catalogRevision}
+        catalogProgress={catalogProgress}
+        onCheckCatalog={updateCatalog}
         onOpen={openFromCollection}
         onClose={closeCollection}
       />

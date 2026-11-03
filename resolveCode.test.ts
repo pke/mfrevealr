@@ -1,13 +1,16 @@
 import fs from 'fs';
 import path from 'path';
+import SERIES from './images/sets/series.json';
 import SETS from './images/sets/sets.json';
 import {
   getConflictingCodes,
+  getSeriesIds,
   getSetIds,
   getSetName,
   resolveCode,
   resolveScan,
   scannedCode,
+  setCatalog,
 } from './resolveCode';
 
 const SET_IDS = Object.keys(SETS);
@@ -142,4 +145,11 @@ test('Anything else in a data matrix is no box code', () => {
   expect(scannedCode('https://example.test')).toBeUndefined();
   expect(scannedCode('123456 2401')).toBeUndefined();
   expect(scannedCode(undefined)).toBeUndefined();
+});
+
+test('Every series of the catalog is known, in its order', () => {
+  expect(getSeriesIds()).toEqual(SET_IDS);
+  setCatalog({'71099': {'Some Figure': [1234567]}}, {'71099': 'Series 99'});
+  expect(getSeriesIds()).toEqual(['71099']);
+  setCatalog(SETS, SERIES);
 });

@@ -29,6 +29,7 @@ const fr: Translation = {
   collection: {
     title: 'Collection',
     empty: 'Scannez une boîte pour commencer votre collection.',
+    notStarted: 'Pas encore commencées',
   },
   series: {
     fallback: 'Série',
@@ -67,6 +68,8 @@ const fr: Translation = {
     title: 'Catalogue',
     version: 'Figurines au {{date}}',
     check: 'Rechercher des mises à jour',
+    pullMore: 'Tirez encore pour rechercher des mises à jour',
+    pullRelease: 'Relâchez pour rechercher des mises à jour',
     checking: 'Vérification…',
     current: 'À jour',
     updated: 'Mis à jour',

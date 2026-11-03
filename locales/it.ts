@@ -30,6 +30,7 @@ const it: Translation = {
   collection: {
     title: 'Collezione',
     empty: 'Scansiona una scatola per iniziare la tua collezione.',
+    notStarted: 'Non ancora iniziate',
   },
   series: {
     fallback: 'Serie',
@@ -68,6 +69,8 @@ const it: Translation = {
     title: 'Catalogo',
     version: 'Minifigure aggiornate al {{date}}',
     check: 'Cerca aggiornamenti',
+    pullMore: 'Trascina ancora per cercare aggiornamenti',
+    pullRelease: 'Rilascia per cercare aggiornamenti',
     checking: 'Verifica in corso…',
     current: 'Già aggiornato',
     updated: 'Aggiornato',
