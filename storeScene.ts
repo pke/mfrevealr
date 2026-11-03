@@ -13,7 +13,9 @@ export type StoreScene = {
   setId: string;
   scan: string;
   found: string[];
-  open?: 'series' | 'settings';
+  /** Other series started, with their figures found, for the collection. */
+  collection?: Record<string, string[]>;
+  open?: 'series' | 'settings' | 'collection';
 };
 
 export const STORE_SCENE: StoreScene | undefined = undefined;

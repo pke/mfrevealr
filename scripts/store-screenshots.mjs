@@ -55,7 +55,11 @@ const fresh = dir => {
 function pixelateFigures() {
   const out = fresh(path.join(GENERATED, 'figures'));
   const setDirs = fs.readdirSync(path.join(ROOT, 'images/sets'));
-  for (const setId of new Set(config.scenes.map(scene => scene.setId))) {
+  // The collection shows every series, so a scene opening it needs them all.
+  const setIds = config.scenes.some(scene => scene.open === 'collection')
+    ? setDirs.flatMap(name => name.match(/^(\d+)-/)?.[1] ?? [])
+    : config.scenes.map(scene => scene.setId);
+  for (const setId of new Set(setIds)) {
     const setDir = setDirs.find(name => name.startsWith(`${setId}-`));
     if (!setDir) {
       throw new Error(`No images/sets folder for set ${setId}`);

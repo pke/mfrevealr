@@ -18,6 +18,7 @@ export const STORE_SCENE: StoreScene | undefined = scene && {
   setId: scene.setId,
   scan: scene.scan,
   found: scene.found,
+  collection: 'collection' in scene ? scene.collection : undefined,
   open: scene.open as StoreScene['open'],
 };
 

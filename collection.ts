@@ -306,7 +306,11 @@ export function createCollection({
 export type Collection = ReturnType<typeof createCollection>;
 
 /** A collection in memory only, as store screenshots stage it. */
-export function stagedCollection(setId: string, found: string[]): Collection {
+export function stagedCollection(
+  setId: string,
+  found: string[],
+  others: Record<string, string[]> = {},
+): Collection {
   const values: Record<string, string> = {[CURRENT]: setId};
   const staged = createCollection({
     storage: {
@@ -318,6 +322,9 @@ export function stagedCollection(setId: string, found: string[]): Collection {
     },
   });
   staged.mark(setId, found, true);
+  Object.entries(others).forEach(([other, codes]) =>
+    staged.mark(other, codes, true),
+  );
   return staged;
 }
 

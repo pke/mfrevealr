@@ -198,6 +198,89 @@
       }
     },
     {
+      "name": "collection",
+      "appearance": "dark",
+      "layout": "card",
+      "photo": "shelf.jpg",
+      "photoTop": 45,
+      "setId": "71045",
+      "scan": "6472861",
+      "found": [
+        "6472860",
+        "6472861",
+        "6472863",
+        "6472866",
+        "6472868",
+        "6472870"
+      ],
+      "collection": {
+        "71046": [
+          "6484685",
+          "6484687",
+          "6484690",
+          "6484693"
+        ],
+        "71047": [
+          "6506754",
+          "6506757",
+          "6506751",
+          "6506755",
+          "6506753",
+          "6506756",
+          "6506758",
+          "6506760",
+          "6506752",
+          "6506759",
+          "6506762",
+          "6506761"
+        ],
+        "71051": [
+          "6584394",
+          "6584392",
+          "6584390"
+        ]
+      },
+      "open": "collection",
+      "headline": {
+        "en-US": [
+          "Every series in one place,",
+          "synced with iCloud"
+        ],
+        "de-DE": [
+          "Alle Serien an einem Ort,",
+          "per iCloud abgeglichen"
+        ],
+        "es-ES": [
+          "Todas tus series juntas,",
+          "sincronizadas con iCloud"
+        ],
+        "fr-FR": [
+          "Toutes vos séries réunies,",
+          "synchronisées avec iCloud"
+        ],
+        "it": [
+          "Tutte le serie in un posto,",
+          "sincronizzate con iCloud"
+        ],
+        "pl": [
+          "Wszystkie serie w jednym miejscu,",
+          "zsynchronizowane przez iCloud"
+        ],
+        "pt-BR": [
+          "Todas as séries num só lugar,",
+          "sincronizadas com o iCloud"
+        ],
+        "ru": [
+          "Все серии в одном месте,",
+          "синхронизация через iCloud"
+        ],
+        "zh-Hans": [
+          "所有系列集中一处",
+          "通过 iCloud 同步"
+        ]
+      }
+    },
+    {
       "name": "split-checklist",
       "appearance": "dark",
       "layout": "split",

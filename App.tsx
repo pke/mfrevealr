@@ -1509,7 +1509,7 @@ function Scanner({
   const scene = STORE_SCENE;
   const [collection] = React.useState(() =>
     scene
-      ? stagedCollection(scene.setId, scene.found)
+      ? stagedCollection(scene.setId, scene.found, scene.collection)
       : getCollection({
           synced:
             !FakeCamera ||
@@ -1546,7 +1546,11 @@ function Scanner({
     // Once the layout has settled, so the sheet opens with its transition.
     const timer = setTimeout(() => {
       setHeroCode(scene.scan);
-      (scene.open === 'series' ? setSeriesOpen : setSettingsOpen)(true);
+      ({
+        series: setSeriesOpen,
+        settings: setSettingsOpen,
+        collection: setCollectionOpen,
+      })[scene.open!](true);
     }, 1000);
     return () => clearTimeout(timer);
   }, [scene]);
