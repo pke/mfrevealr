@@ -65,6 +65,11 @@
   [[NSUbiquitousKeyValueStore defaultStore] setString:value forKey:key];
 }
 
+- (void)remove:(NSString *)key
+{
+  [[NSUbiquitousKeyValueStore defaultStore] removeObjectForKey:key];
+}
+
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params
 {

@@ -12,8 +12,8 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		30ADFD8E4060978CE44C0EA7 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E32A9ED4914949A46A1E33A8 /* InfoPlist.strings */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
-		78546C9EAF5906F6483A6943 /* RCTCloudKeyValues.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4185EBD9B1071B166CA3667 /* RCTCloudKeyValues.mm */; };
 		761780EF2CA45674006654EF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EE2CA45674006654EF /* SceneDelegate.swift */; };
+		78546C9EAF5906F6483A6943 /* RCTCloudKeyValues.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4185EBD9B1071B166CA3667 /* RCTCloudKeyValues.mm */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8A338CF8E9E9DF715DFE99BC /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 6376098F666E822CD87DEAED /* Settings.bundle */; };
 /* End PBXBuildFile section */
@@ -33,14 +33,14 @@
 		6376098F666E822CD87DEAED /* Settings.bundle */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "wrapper.plug-in"; name = Settings.bundle; path = mfrevealr/Settings.bundle; sourceTree = "<group>"; };
 		6C3A3C508B236FA69428CE8A /* pt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = pt; path = mfrevealr/pt.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = mfrevealr/AppDelegate.swift; sourceTree = "<group>"; };
-		F4185EBD9B1071B166CA3667 /* RCTCloudKeyValues.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = RCTCloudKeyValues.mm; path = mfrevealr/RCTCloudKeyValues.mm; sourceTree = "<group>"; };
-		91E0247944FCBEC988A56DE9 /* mfrevealr.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = mfrevealr.entitlements; path = mfrevealr/mfrevealr.entitlements; sourceTree = "<group>"; };
 		761780EE2CA45674006654EF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = mfrevealr/SceneDelegate.swift; sourceTree = "<group>"; };
 		7A83C8A62B192D7EDE304CBB /* de */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = de; path = mfrevealr/de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = mfrevealr/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		91E0247944FCBEC988A56DE9 /* mfrevealr.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = mfrevealr.entitlements; path = mfrevealr/mfrevealr.entitlements; sourceTree = "<group>"; };
 		933B8EBBBC57FB12E6FEB3E5 /* es */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = es; path = mfrevealr/es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		ADB6FE7097DAF244E72FE23C /* it */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = it; path = mfrevealr/it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F4185EBD9B1071B166CA3667 /* RCTCloudKeyValues.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = RCTCloudKeyValues.mm; path = mfrevealr/RCTCloudKeyValues.mm; sourceTree = "<group>"; };
 		F5745102EAF7BCB9BCF2207F /* fr */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = fr; path = mfrevealr/fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -395,12 +395,12 @@
 				APP_DISPLAY_NAME = "Mini Figure Revealr Dev";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Debug";
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = mfrevealr/mfrevealr.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = K9VADMGRA7;
 				ENABLE_BITCODE = NO;
-				CODE_SIGN_ENTITLEMENTS = mfrevealr/mfrevealr.entitlements;
 				INFOPLIST_FILE = mfrevealr/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.shopping";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -431,11 +431,11 @@
 				APP_DISPLAY_NAME = "Mini Figure Revealr";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = mfrevealr/mfrevealr.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = K9VADMGRA7;
-				CODE_SIGN_ENTITLEMENTS = mfrevealr/mfrevealr.entitlements;
 				INFOPLIST_FILE = mfrevealr/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.shopping";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;

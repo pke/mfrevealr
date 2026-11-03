@@ -11,6 +11,7 @@ export interface Spec extends TurboModule {
   getAll(): string;
   get(key: string): string | null;
   set(key: string, value: string): void;
+  remove(key: string): void;
   /** Keys another device changed, comma separated. */
   readonly onChange: CodegenTypes.EventEmitter<string>;
 }

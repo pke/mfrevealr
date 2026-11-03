@@ -15,6 +15,7 @@ import {
   PixelRatio,
   Platform,
   Pressable,
+  Settings as UserDefaults,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -1451,12 +1452,18 @@ function Scanner({
   // Kept on the device and synced through iCloud. Store screenshots stage
   // a collection in progress instead, in memory only. Test builds keep theirs
   // off iCloud, whose store outlives the app: every test would start with
-  // the figures of the one before.
+  // the figures of the one before. Launched with `-syncCollection YES` they
+  // sync anyway, to try iCloud sync between simulators.
   const scene = STORE_SCENE;
   const [collection] = React.useState(() =>
     scene
       ? stagedCollection(scene.setId, scene.found)
-      : getCollection({synced: !FakeCamera}),
+      : getCollection({
+          synced:
+            !FakeCamera ||
+            (Platform.OS === 'ios' &&
+              Boolean(UserDefaults.get('syncCollection'))),
+        }),
   );
   React.useEffect(() => collection.sync(), [collection]);
   const [currentSetId, setCurrentSetId] = React.useState(() =>

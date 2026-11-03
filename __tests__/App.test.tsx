@@ -34,7 +34,11 @@ jest.mock(
   () => require('react-native-safe-area-context/jest/mock').default,
 );
 jest.mock('react-native-mmkv', () => ({
-  createMMKV: () => ({getString: () => undefined, set: () => {}}),
+  createMMKV: () => ({
+    getString: () => undefined,
+    set: () => {},
+    getAllKeys: () => [],
+  }),
 }));
 jest.mock('react-native-vision-camera', () => ({
   Camera: 'Camera',
