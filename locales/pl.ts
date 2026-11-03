@@ -27,6 +27,10 @@ const pl: Translation = {
   card: {
     showSeries: 'Pokazuje wszystkie figurki z tej serii',
   },
+  collection: {
+    title: 'Kolekcja',
+    empty: 'Zeskanuj opakowanie, aby zacząć kolekcję.',
+  },
   series: {
     fallback: 'Seria',
     summary: 'Znalezione: {{found}} z {{total}} · dotknij, aby odhaczyć',

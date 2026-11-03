@@ -24,6 +24,10 @@ const en = {
   card: {
     showSeries: 'Shows every figure in this series',
   },
+  collection: {
+    title: 'Collection',
+    empty: 'Scan a box to start your collection.',
+  },
   series: {
     fallback: 'Series',
     summary: '{{found}} of {{total}} found · tap to tick off',

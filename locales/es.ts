@@ -27,6 +27,10 @@ const es: Translation = {
   card: {
     showSeries: 'Muestra todas las figuras de esta serie',
   },
+  collection: {
+    title: 'Colección',
+    empty: 'Escanea una caja para empezar tu colección.',
+  },
   series: {
     fallback: 'Serie',
     summary: '{{found}} de {{total}} encontradas · toca para marcar',

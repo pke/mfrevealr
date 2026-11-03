@@ -65,7 +65,13 @@ import {
 import {Layout, Settings, useSettings} from './settings';
 import {classifyScan} from './scanOutcome';
 import {createSightings} from './sightings';
-import {getCollection, stagedCollection, useFound} from './collection';
+import {
+  getCollection,
+  stagedCollection,
+  useFound,
+  useStarted,
+} from './collection';
+import {CollectionSheet} from './CollectionSheet';
 import {STORE_SCENE} from './storeScene';
 import {FakeCamera, type FakeCameraCode} from './fakeCamera';
 import {Lookup, LookupMessage} from './LookupMessage';
@@ -250,6 +256,29 @@ function RevealCard({
       </View>
     );
   }
+  if (!scan && found > 0) {
+    // Nothing scanned since the app started: the series being collected,
+    // ready to open, and what to scan next.
+    return (
+      <View
+        ref={heroSourceRef(heroes)}
+        style={[styles.card, {backgroundColor: palette.surface}]}>
+        <Pressable
+          testID="series-card"
+          onPress={() => onOpenSeries()}
+          accessibilityRole="button"
+          accessibilityHint={t('card.showSeries')}>
+          <Text style={[styles.title, {color: palette.text}]}>
+            {setName ?? t('series.fallback')}
+          </Text>
+          <Text style={[styles.subtitle, {color: palette.secondary}]}>
+            {t('hint.short')}
+          </Text>
+          <Progress found={found} total={total} />
+        </Pressable>
+      </View>
+    );
+  }
   if (!scan) {
     return (
       <View style={[styles.card, {backgroundColor: palette.surface}]}>
@@ -303,24 +332,33 @@ function RevealCard({
           {setName ? `${setName} · ` : ''}
           {status}
         </Text>
-        <View style={styles.progressRow}>
-          <View style={[styles.track, {backgroundColor: palette.track}]}>
-            <View
-              style={[
-                styles.fill,
-                {
-                  backgroundColor: palette.accent,
-                  width: `${(found / total) * 100}%`,
-                },
-              ]}
-            />
-          </View>
-          <Text style={[styles.progressText, {color: palette.secondary}]}>
-            {t('progress', {found, total})} ›
-          </Text>
-        </View>
+        <Progress found={found} total={total} />
       </Pressable>
     </Animated.View>
+  );
+}
+
+/** How much of the series is found, as a bar and "6 of 12 ›". */
+function Progress({found, total}: {found: number; total: number}) {
+  const palette = usePalette();
+  const {t} = useTranslation();
+  return (
+    <View style={styles.progressRow}>
+      <View style={[styles.track, {backgroundColor: palette.track}]}>
+        <View
+          style={[
+            styles.fill,
+            {
+              backgroundColor: palette.accent,
+              width: `${(found / total) * 100}%`,
+            },
+          ]}
+        />
+      </View>
+      <Text style={[styles.progressText, {color: palette.secondary}]}>
+        {t('progress', {found, total})} ›
+      </Text>
+    </View>
   );
 }
 
@@ -1329,6 +1367,26 @@ function Collection({
   );
 }
 
+/** Opens the collection: a grid of four tiles, like a sheet of figures. */
+function CollectionButton({onPress}: {onPress: () => void}) {
+  const {t} = useTranslation();
+  return (
+    <Pressable
+      testID="collection-button"
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={t('collection.title')}
+      hitSlop={8}
+      style={styles.roundButton}>
+      <View style={styles.collectionIcon}>
+        {[0, 1, 2, 3].map(tile => (
+          <View key={tile} style={styles.collectionTile} />
+        ))}
+      </View>
+    </Pressable>
+  );
+}
+
 /** Opens the settings sheet; sits on the camera, so always light on dark. */
 function SettingsButton({onPress}: {onPress: () => void}) {
   const {t} = useTranslation();
@@ -1476,6 +1534,7 @@ function Scanner({
   const [seriesOpen, setSeriesOpen] = React.useState(false);
   const [inFlight, setInFlight] = React.useState(NOTHING_IN_FLIGHT);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
+  const [collectionOpen, setCollectionOpen] = React.useState(false);
   const [torch, setTorch] = React.useState(false);
   // Where each figure sits in the current layout, and the one the series
   // sheet flies to and from: the card's figure or the tapped thumbnail.
@@ -1510,7 +1569,7 @@ function Scanner({
   // The camera keeps running behind the sheets, which leave it visible at the
   // top, but scans wait until they close so nothing changes underneath.
   const sheetOpenRef = React.useRef(false);
-  sheetOpenRef.current = seriesOpen || settingsOpen;
+  sheetOpenRef.current = seriesOpen || settingsOpen || collectionOpen;
 
   const setIds = React.useMemo(
     () => getSetIds(currentSetId) || [],
@@ -1693,6 +1752,8 @@ function Scanner({
 
   const closeSeries = React.useCallback(() => setSeriesOpen(false), []);
   const closeSettings = React.useCallback(() => setSettingsOpen(false), []);
+  const closeCollection = React.useCallback(() => setCollectionOpen(false), []);
+  const started = useStarted(collection);
 
   if (!hasPermission && !scene) {
     return <PermissionDenied onRequest={requestPermission} />;
@@ -1705,6 +1766,23 @@ function Scanner({
     sheetOpenRef.current = true;
     setHeroCode(code ?? lastScan?.code);
     setSeriesOpen(true);
+  };
+  // A series picked in the collection becomes the one collected, and opens
+  // once the collection has slid away.
+  const openFromCollection = (setId: string) => {
+    setCollectionOpen(false);
+    if (setId !== currentSetIdRef.current) {
+      currentSetIdRef.current = setId;
+      collection.setCurrent(setId);
+      setCurrentSetId(setId);
+      setLastScan(undefined);
+      setLookup(undefined);
+    }
+    setTimeout(() => {
+      sheetOpenRef.current = true;
+      setHeroCode(undefined);
+      setSeriesOpen(true);
+    }, SHEET_SWAP_MS);
   };
   const layout: Layout = scene?.layout ?? settings.layout;
 
@@ -1745,7 +1823,7 @@ function Scanner({
       ) : (
         <Text style={styles.noCamera}>{t('camera.unavailable')}</Text>
       )}
-      {settings.codeOverlay && !seriesOpen && !settingsOpen && (
+      {settings.codeOverlay && !sheetOpenRef.current && (
         <LiveCodeMarkers markers={markers} found={figuresInSet} />
       )}
       {/* The status bar is always light; this keeps it legible over a
@@ -1764,6 +1842,12 @@ function Scanner({
         layout === 'split' && {paddingBottom: CONTROLS_GAP + SPLIT_OVERLAP},
       ]}
       pointerEvents="box-none">
+      <CollectionButton
+        onPress={() => {
+          sheetOpenRef.current = true;
+          setCollectionOpen(true);
+        }}
+      />
       <SettingsButton
         onPress={() => {
           sheetOpenRef.current = true;
@@ -1853,6 +1937,14 @@ function Scanner({
         onReset={confirmReset}
         onClose={closeSeries}
       />
+      <CollectionSheet
+        visible={collectionOpen}
+        insets={insets}
+        collection={collection}
+        started={started}
+        onOpen={openFromCollection}
+        onClose={closeCollection}
+      />
       <SettingsSheet
         visible={settingsOpen}
         insets={insets}
@@ -1870,6 +1962,8 @@ function Scanner({
   );
 }
 
+// Long enough for one sheet to slide away before the next comes up.
+const SHEET_SWAP_MS = 350;
 const CONTROLS_GAP = 10;
 
 const styles = StyleSheet.create({
@@ -1921,6 +2015,19 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 16,
     paddingBottom: CONTROLS_GAP,
+  },
+  collectionIcon: {
+    width: 18,
+    height: 18,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 2,
+  },
+  collectionTile: {
+    width: 8,
+    height: 8,
+    borderRadius: 2,
+    backgroundColor: '#fff',
   },
   roundButton: {
     width: 44,

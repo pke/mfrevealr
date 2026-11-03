@@ -27,6 +27,10 @@ const ru: Translation = {
   card: {
     showSeries: 'Показывает все фигурки этой серии',
   },
+  collection: {
+    title: 'Коллекция',
+    empty: 'Отсканируйте коробку, чтобы начать коллекцию.',
+  },
   series: {
     fallback: 'Серия',
     summary: 'Найдено {{found}} из {{total}} · нажмите, чтобы отметить',

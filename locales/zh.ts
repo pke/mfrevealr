@@ -26,6 +26,10 @@ const zh: Translation = {
   card: {
     showSeries: '显示该系列的所有人仔',
   },
+  collection: {
+    title: '收藏',
+    empty: '扫描一个包装盒，开始你的收藏。',
+  },
   series: {
     fallback: '系列',
     summary: '已找到 {{found}} / {{total}} · 点按即可勾选',

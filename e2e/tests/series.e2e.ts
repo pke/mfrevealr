@@ -37,9 +37,8 @@ test('the collection is kept when the app starts again', async ({
   await expect(screen.getByTestId(`tile-${SERIES_25[3]}`)).toBeChecked();
 
   await app.restart();
-  // The same box again, so the card can open its series.
-  await scan(device, BOX.fitness);
-  await screen.getByTestId('reveal-card').tap();
+  // Nothing scanned yet: the card shows the series being collected.
+  await screen.getByTestId('series-card').tap();
   await expect(screen.getByTestId(`tile-${SERIES_25[1]}`)).toBeChecked();
   await expect(screen.getByTestId(`tile-${SERIES_25[3]}`)).toBeChecked();
   await expect(
@@ -88,4 +87,25 @@ test('starting over clears the collection', async ({device, screen}) => {
     .getByRole('button', /^start over$/i)
     .tap();
   await expect(screen.getByTestId('scan-hint')).toBeVisible();
+});
+
+test('the collection lists every series started and opens one', async ({
+  device,
+  screen,
+}) => {
+  await scan(device, BOX.fitness);
+  await scan(device, BOX.blacktron);
+  await screen.getByTestId('collection-button').tap();
+  await expect(screen.getByTestId('collection-71045')).toContainText(
+    'Series 25',
+  );
+  await expect(screen.getByTestId('collection-71046')).toContainText(
+    'Series 26 Space',
+  );
+
+  await screen.getByTestId('collection-71045').tap();
+  await expect(
+    screen.getByText('1 of 12 found · tap to tick off'),
+  ).toBeVisible();
+  await expect(screen.getByTestId(`tile-${SERIES_25[1]}`)).toBeChecked();
 });

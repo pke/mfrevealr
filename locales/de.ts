@@ -27,6 +27,10 @@ const de: Translation = {
   card: {
     showSeries: 'Zeigt alle Figuren dieser Serie',
   },
+  collection: {
+    title: 'Sammlung',
+    empty: 'Scanne eine Packung, um deine Sammlung zu beginnen.',
+  },
   series: {
     fallback: 'Serie',
     summary: '{{found}} von {{total}} gefunden · zum Abhaken antippen',

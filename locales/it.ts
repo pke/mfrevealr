@@ -27,6 +27,10 @@ const it: Translation = {
   card: {
     showSeries: 'Mostra tutte le minifigure di questa serie',
   },
+  collection: {
+    title: 'Collezione',
+    empty: 'Scansiona una scatola per iniziare la tua collezione.',
+  },
   series: {
     fallback: 'Serie',
     summary: '{{found}} di {{total}} trovate · tocca per spuntare',
