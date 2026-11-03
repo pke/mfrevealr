@@ -87,6 +87,7 @@ import {
   HeroRegistry,
   heroTitleRef,
   Measurable,
+  measure,
   Scan,
   ScanHint,
   scanStatus,
@@ -363,17 +364,6 @@ function Progress({found, total}: {found: number; total: number}) {
 }
 
 type Rect = {x: number; y: number; width: number; height: number};
-
-function measure(view: Measurable | null): Promise<Rect | undefined> {
-  return new Promise(resolve => {
-    if (!view) {
-      return resolve(undefined);
-    }
-    view.measureInWindow((x, y, width, height) =>
-      resolve(width > 0 && height > 0 ? {x, y, width, height} : undefined),
-    );
-  });
-}
 
 /** Where a `resizeMode="contain"` image actually draws inside its box. */
 function containedRect(box: Rect, code: string): Rect {
@@ -1538,10 +1528,15 @@ function Scanner({
   const [inFlight, setInFlight] = React.useState(NOTHING_IN_FLIGHT);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [collectionOpen, setCollectionOpen] = React.useState(false);
+  // A series opened from the collection grows out of its row over it, and
+  // goes back into it.
+  const [seriesFromCollection, setSeriesFromCollection] = React.useState(false);
   const [torch, setTorch] = React.useState(false);
   // Where each figure sits in the current layout, and the one the series
   // sheet flies to and from: the card's figure or the tapped thumbnail.
   const [heroes] = React.useState<HeroRegistry>(() => ({current: {}}));
+  // The collection's row a series opened from, with its figures.
+  const [rowHeroes] = React.useState<HeroRegistry>(() => ({current: {}}));
   const [heroCode, setHeroCode] = React.useState<string>();
   React.useEffect(() => {
     if (!scene?.open) {
@@ -1776,12 +1771,12 @@ function Scanner({
     // swap the figure on the card that is about to fly into the sheet.
     sheetOpenRef.current = true;
     setHeroCode(code ?? lastScan?.code);
+    setSeriesFromCollection(false);
     setSeriesOpen(true);
   };
   // A series picked in the collection becomes the one collected, and opens
-  // once the collection has slid away.
-  const openFromCollection = (setId: string) => {
-    setCollectionOpen(false);
+  // over the collection, on the figure touched if any.
+  const openFromCollection = (setId: string, code?: string) => {
     if (setId !== currentSetIdRef.current) {
       currentSetIdRef.current = setId;
       collection.setCurrent(setId);
@@ -1789,13 +1784,14 @@ function Scanner({
       setLastScan(undefined);
       setLookup(undefined);
     }
-    setTimeout(() => {
-      sheetOpenRef.current = true;
-      setHeroCode(undefined);
-      setSeriesOpen(true);
-    }, SHEET_SWAP_MS);
+    sheetOpenRef.current = true;
+    setHeroCode(code);
+    setSeriesFromCollection(true);
+    setSeriesOpen(true);
   };
   const layout: Layout = scene?.layout ?? settings.layout;
+  // Flying from the collection, nothing leaves the card or strip.
+  const cardInFlight = seriesFromCollection ? NOTHING_IN_FLIGHT : inFlight;
 
   // Switching layouts moves the camera, which restarts its session; that only
   // happens from the settings sheet.
@@ -1918,7 +1914,7 @@ function Scanner({
                 total={setIds.length}
                 setName={setName}
                 heroes={heroes}
-                inFlight={inFlight}
+                inFlight={cardInFlight}
                 onOpenSeries={openSeries}
               />
             ) : (
@@ -1927,7 +1923,7 @@ function Scanner({
                 setIds={setIds}
                 found={figuresInSet}
                 heroes={heroes}
-                inFlight={inFlight}
+                inFlight={cardInFlight}
                 onOpenSeries={openSeries}
               />
             )}
@@ -1939,19 +1935,7 @@ function Scanner({
         progress={catalogProgress}
         top={insets.top}
       />
-      <Collection
-        visible={seriesOpen}
-        setName={setName}
-        setIds={setIds}
-        found={figuresInSet}
-        heroCode={heroCode}
-        heroes={heroes}
-        insets={insets}
-        onFlying={setInFlight}
-        onToggle={toggleFigure}
-        onReset={confirmReset}
-        onClose={closeSeries}
-      />
+      {/* Under the series, which opens over it. */}
       <CollectionSheet
         visible={collectionOpen}
         insets={insets}
@@ -1959,9 +1943,24 @@ function Scanner({
         started={started}
         catalogRevision={catalogRevision}
         catalogProgress={catalogProgress}
+        heroes={rowHeroes}
+        inFlight={seriesFromCollection ? inFlight : NOTHING_IN_FLIGHT}
         onCheckCatalog={updateCatalog}
         onOpen={openFromCollection}
         onClose={closeCollection}
+      />
+      <Collection
+        visible={seriesOpen}
+        setName={setName}
+        setIds={setIds}
+        found={figuresInSet}
+        heroCode={heroCode}
+        heroes={seriesFromCollection ? rowHeroes : heroes}
+        insets={insets}
+        onFlying={setInFlight}
+        onToggle={toggleFigure}
+        onReset={confirmReset}
+        onClose={closeSeries}
       />
       <SettingsSheet
         visible={settingsOpen}
@@ -1980,8 +1979,6 @@ function Scanner({
   );
 }
 
-// Long enough for one sheet to slide away before the next comes up.
-const SHEET_SWAP_MS = 350;
 const CONTROLS_GAP = 10;
 
 const styles = StyleSheet.create({

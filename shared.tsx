@@ -9,6 +9,26 @@ export type Scan = {code: string; isNew: boolean};
 
 export type Measurable = Pick<HostInstance, 'measureInWindow'>;
 
+// A view on screen is measured right away; one no longer mounted never
+// answers, and must not hold up what waits for it.
+const MEASURE_MS = 100;
+
+/** Where a view is in the window, unless it can't be measured. */
+export function measure(
+  view: Measurable | null,
+): Promise<{x: number; y: number; width: number; height: number} | undefined> {
+  return new Promise(resolve => {
+    if (!view) {
+      return resolve(undefined);
+    }
+    const timer = setTimeout(() => resolve(undefined), MEASURE_MS);
+    view.measureInWindow((x, y, width, height) => {
+      clearTimeout(timer);
+      resolve(width > 0 && height > 0 ? {x, y, width, height} : undefined);
+    });
+  });
+}
+
 /**
  * Where a figure, and its name if shown, sit in the current layout, so the
  * series sheet can fly them into their tile. Layouts register through refs.

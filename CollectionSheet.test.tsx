@@ -3,7 +3,12 @@ import renderer, {act, ReactTestInstance} from 'react-test-renderer';
 import type {Collection} from './collection';
 import {CollectionSheet} from './CollectionSheet';
 import type {UpdateResult} from './catalogStore';
-import {getSeriesIds} from './resolveCode';
+import {getSeriesIds, getSetIds} from './resolveCode';
+import {
+  type HeroRegistry,
+  type InFlight,
+  NOTHING_IN_FLIGHT,
+} from './shared';
 
 jest.mock('react-native-mmkv', () => ({
   createMMKV: () => ({getString: () => undefined, set: () => {}}),
@@ -39,6 +44,9 @@ function render(
   started: string[],
   {
     onCheckCatalog = async (): Promise<UpdateResult> => 'current',
+    onOpen = () => {},
+    heroes = {current: {}} as HeroRegistry,
+    inFlight = NOTHING_IN_FLIGHT as InFlight,
   } = {},
 ) {
   let tree!: renderer.ReactTestRenderer;
@@ -50,10 +58,14 @@ function render(
         collection={collection}
         started={started}
         catalogRevision={202611020000}
+        heroes={heroes}
+        inFlight={inFlight}
         onCheckCatalog={onCheckCatalog}
-        onOpen={() => {}}
+        onOpen={onOpen}
         onClose={() => {}}
       />,
+      // Every host view can be measured.
+      {createNodeMock: () => ({measureInWindow: () => {}})},
     );
   });
   return tree;
@@ -103,6 +115,56 @@ test('The catalog can be checked for new series right there', async () => {
   expect(texts(tree.root)).toContain('catalog.current');
 });
 
+const press = (tree: renderer.ReactTestRenderer, id: string) =>
+  act(() =>
+    tree.root
+      .find(node => node.props.testID === id && typeof node.type !== 'string')
+      .props.onPress(),
+  );
+
+test('A series opens out of its row, its figures flying from there', () => {
+  const [first, second] = getSeriesIds();
+  const heroes: HeroRegistry = {current: {}};
+  const onOpen = jest.fn();
+  const tree = render([first], {heroes, onOpen});
+  press(tree, `collection-${second}`);
+  expect(onOpen).toHaveBeenCalledWith(second, undefined);
+  expect(heroes.source).toBeTruthy();
+  expect(Object.keys(heroes.current).sort()).toEqual(
+    [...getSetIds(second)!].sort(),
+  );
+  // Not found yet, so drawn faded where they fly from.
+  expect(heroes.current[getSetIds(second)![0]].imageOpacity).toBe(0.25);
+});
+
+test('A figure touched in a row is the one the series opens on', () => {
+  const [first] = getSeriesIds();
+  const figure = getSetIds(first)![3];
+  const onOpen = jest.fn();
+  const tree = render([first], {onOpen});
+  press(tree, `collection-figure-${figure}`);
+  expect(onOpen).toHaveBeenCalledWith(first, figure);
+});
+
+test('Figures flying to the series are hidden in their row', () => {
+  const [first] = getSeriesIds();
+  const [flying, staying] = getSetIds(first)!;
+  const tree = render([first], {
+    inFlight: {codes: new Set([flying])},
+  });
+  const opacity = (code: string) =>
+    tree.root
+      .find(node => node.props.testID === `collection-image-${code}`)
+      .props.style.flat(Infinity)
+      .reduce(
+        (value: number, style: {opacity?: number} | false) =>
+          style && style.opacity !== undefined ? style.opacity : value,
+        1,
+      );
+  expect(opacity(flying)).toBe(0);
+  expect(opacity(staying)).toBe(0.25);
+});
+
 test('Pulling past the end of the list checks the catalog', async () => {
   let answer!: (result: UpdateResult) => void;
   const check = jest.fn(
@@ -116,4 +178,39 @@ test('Pulling past the end of the list checks the catalog', async () => {
   expect(check).toHaveBeenCalledTimes(1);
   await act(async () => answer('updated'));
   expect(texts(tree.root)).toContain('catalog.updated');
+});
+
+test('A series that gets started keeps flying back into its row', () => {
+  const [first, second] = getSeriesIds();
+  const heroes: HeroRegistry = {current: {}};
+  const createNodeMock = () => ({measureInWindow: () => {}});
+  const sheet = (started: string[]) => (
+    <CollectionSheet
+      visible
+      insets={{top: 0, bottom: 0}}
+      collection={collection}
+      started={started}
+      catalogRevision={202611020000}
+      heroes={heroes}
+      inFlight={NOTHING_IN_FLIGHT}
+      onCheckCatalog={async () => 'current'}
+      onOpen={() => {}}
+      onClose={() => {}}
+    />
+  );
+  let tree!: renderer.ReactTestRenderer;
+  act(() => {
+    tree = renderer.create(sheet([first]), {createNodeMock});
+  });
+  press(tree, `collection-${second}`);
+  const source = heroes.source;
+  // Its first figure ticked off in the series: it moves up among those
+  // started, and stays the row it opened from.
+  act(() => tree.update(sheet([first, second])));
+  // Compared as booleans: a view's mock prints far too large to diff.
+  expect(heroes.source === source).toBe(true);
+  const row = tree.root
+    .findAll(node => node.props.testID === `collection-${second}`)
+    .map(node => node.instance);
+  expect(row.includes(heroes.source)).toBe(true);
 });
