@@ -82,6 +82,8 @@ backup.tar
 
 # fastlane credentials (App Store Connect API key) and signing downloads
 **/fastlane/.env
+# The App Review contact (fastlane pull_metadata): personal, and this repo is public
+**/fastlane/metadata/review_information
 # e2e secrets (ANTHROPIC_API_KEY), see e2e/.env.example
 e2e/.env.local
 *.cer

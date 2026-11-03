@@ -21,14 +21,21 @@ BUILD_PATH = File.expand_path("../build", FastlaneCore::FastlaneFolder.path)
 
 # The store only takes a language with a description, so locales that so far
 # have release notes only (the app speaks more languages than its listing)
-# stay out of uploads until their texts are written.
+# stay out of uploads until their texts are written. The rest goes along:
+# copyright, categories and the App Review information.
+NOT_A_LANGUAGE = ["review_information"]
+
 def with_complete_metadata
   require "tmpdir"
   Dir.mktmpdir do |dir|
-    Dir[File.join(METADATA_PATH, "*", "description.txt")].each do |file|
-      FileUtils.cp_r(File.dirname(file), dir)
+    Dir.children(METADATA_PATH).each do |entry|
+      path = File.join(METADATA_PATH, entry)
+      language = File.directory?(path) && !NOT_A_LANGUAGE.include?(entry)
+      next if language && !File.exist?(File.join(path, "description.txt"))
+      FileUtils.cp_r(path, dir)
     end
-    UI.message("Store languages: #{Dir.children(dir).sort.join(', ')}")
+    languages = Dir.children(dir).select { |entry| File.directory?(File.join(dir, entry)) } - NOT_A_LANGUAGE
+    UI.message("Store languages: #{languages.sort.join(', ')}")
     yield dir
   end
 end
