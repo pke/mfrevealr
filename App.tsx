@@ -1798,6 +1798,10 @@ function Scanner({
   // happens from the settings sheet.
   const camera = (
     <View
+      // A view of its own per placement: one reused from the other layout
+      // never reports its new size, and figures are placed by it.
+      key={layout === 'split' ? 'split-camera' : 'camera'}
+      testID="camera-view"
       style={StyleSheet.absoluteFill}
       onTouchEnd={focus}
       onLayout={event => {

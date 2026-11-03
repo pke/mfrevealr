@@ -50,6 +50,18 @@ jest.mock('react-native-vision-camera', () => ({
   useCodeScanner: (scanner: unknown) => scanner,
 }));
 
+// The layout the app starts in, switched by the tests below.
+let mockLayout = 'card';
+jest.mock('../settings', () => {
+  const settings = () => ({
+    theme: 'system',
+    layout: mockLayout,
+    language: 'system',
+    codeOverlay: false,
+  });
+  return {loadSettings: settings, useSettings: () => [settings(), () => {}]};
+});
+
 it('renders correctly', async () => {
   let tree!: renderer.ReactTestRenderer;
   await act(async () => {
@@ -58,4 +70,35 @@ it('renders correctly', async () => {
   expect(
     tree.root.findAll(node => node.props.testID === 'settings-button'),
   ).not.toHaveLength(0);
+});
+
+it('measures the camera anew when a layout moves it', async () => {
+  // The split layout's camera sits above the checklist; the strip's fills
+  // the screen. Figures are placed by the size the camera's view reports,
+  // which a view reused from another layout never reports again: the strip's
+  // must be a view of its own.
+  type Node = {_fiber: {stateNode: unknown}};
+  const views = (tree: renderer.ReactTestRenderer) =>
+    tree.root
+      .findAll(node => typeof node.type === 'string')
+      .map(node => (node as unknown as Node)._fiber.stateNode);
+  const cameraView = (tree: renderer.ReactTestRenderer) =>
+    (
+      tree.root.find(
+        node =>
+          node.props.testID === 'camera-view' && typeof node.type === 'string',
+      ) as unknown as Node
+    )._fiber.stateNode;
+  mockLayout = 'split';
+  let tree!: renderer.ReactTestRenderer;
+  await act(async () => {
+    tree = renderer.create(<App />);
+  });
+  const split = new Set(views(tree));
+  mockLayout = 'strip';
+  await act(async () => {
+    tree.update(<App />);
+  });
+  expect(split.has(cameraView(tree))).toBe(false);
+  mockLayout = 'card';
 });
