@@ -199,7 +199,7 @@ function headlineSize(lines, font) {
   return Math.min(104, Math.floor((104 * maxWidth) / Math.max(...widths)));
 }
 
-/** Device frame and headline on the brand red, at the screenshot's size. */
+/** Device frame and headline on the splash yellow, at the screenshot's size. */
 function compose(shot, lines, font, out) {
   const {width, height} = screen;
   const screenWidth = Math.round(width * 0.765);

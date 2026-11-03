@@ -7,8 +7,8 @@
   },
   "pixelate": 22,
   "frame": {
-    "background": "#DA291C",
-    "headline": "#FFFFFF",
+    "background": "#FEDE00",
+    "headline": "#1C1C1E",
     "font": "/Library/Fonts/SF-Pro-Display-Bold.otf",
     "fonts": {
       "zh-Hans": {
