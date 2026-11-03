@@ -16,6 +16,7 @@ import {
   heroSourceRef,
   type InFlight,
   HeroRegistry,
+  MISSING_OPACITY,
   heroTitleRef,
   Scan,
   scanStatus,
@@ -27,7 +28,6 @@ const THUMB = 52;
 const LATEST = 72;
 const GAP = 8;
 const PILL_TITLE_SIZE = 17;
-const MISSING_OPACITY = 0.25;
 
 /**
  * Layout C: the camera keeps the screen; a name pill and a row of the series

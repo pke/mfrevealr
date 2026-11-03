@@ -88,6 +88,7 @@ import {
   heroTitleRef,
   Measurable,
   measure,
+  MISSING_OPACITY,
   Scan,
   ScanHint,
   scanStatus,
@@ -878,7 +879,7 @@ function Collection({
             from: containedRect(figure.image, figure.code),
             to: containedRect(lift(figure.tileImage), figure.code),
             fromOpacity: figure.parts.imageOpacity ?? 1,
-            opacity: has ? 1 : 0.25,
+            opacity: has ? 1 : MISSING_OPACITY,
             pop: figure.hero,
             title: figure.tileTitle && {
               text: getFigureTitle(figure.code) ?? '',
@@ -2154,7 +2155,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   missing: {
-    opacity: 0.25,
+    opacity: MISSING_OPACITY,
   },
   // Fixed two-line height, so fitTiles knows the size of every tile.
   tileTitle: {

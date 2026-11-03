@@ -9,6 +9,9 @@ export type Scan = {code: string; isNew: boolean};
 
 export type Measurable = Pick<HostInstance, 'measureInWindow'>;
 
+/** How faded a figure not found yet is drawn, wherever figures show. */
+export const MISSING_OPACITY = 0.45;
+
 // A view on screen is measured right away; one no longer mounted never
 // answers, and must not hold up what waits for it.
 const MEASURE_MS = 100;

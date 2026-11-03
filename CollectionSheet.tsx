@@ -13,11 +13,11 @@ import {
   type HeroRegistry,
   type InFlight,
   type Measurable,
+  MISSING_OPACITY,
 } from './shared';
 import {usePalette} from './theme';
 
 const THUMB = 26;
-const MISSING_OPACITY = 0.25;
 
 /**
  * Every series the catalog knows: those with a figure found first, with how

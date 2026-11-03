@@ -10,7 +10,13 @@ import {
 } from 'react-native';
 import IMAGES from './figureImages';
 import {getFigureTitle} from './resolveCode';
-import {CheckBadge, Scan, ScanHint, scanStatus} from './shared';
+import {
+  CheckBadge,
+  MISSING_OPACITY,
+  Scan,
+  ScanHint,
+  scanStatus,
+} from './shared';
 import type {Insets} from './Sheet';
 import {useTranslation} from 'react-i18next';
 import {usePalette} from './theme';
@@ -165,6 +171,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   missing: {
-    opacity: 0.25,
+    opacity: MISSING_OPACITY,
   },
 });

@@ -7,6 +7,7 @@ import {getSeriesIds, getSetIds} from './resolveCode';
 import {
   type HeroRegistry,
   type InFlight,
+  MISSING_OPACITY,
   NOTHING_IN_FLIGHT,
 } from './shared';
 
@@ -134,7 +135,9 @@ test('A series opens out of its row, its figures flying from there', () => {
     [...getSetIds(second)!].sort(),
   );
   // Not found yet, so drawn faded where they fly from.
-  expect(heroes.current[getSetIds(second)![0]].imageOpacity).toBe(0.25);
+  expect(heroes.current[getSetIds(second)![0]].imageOpacity).toBe(
+    MISSING_OPACITY,
+  );
 });
 
 test('A figure touched in a row is the one the series opens on', () => {
@@ -162,7 +165,7 @@ test('Figures flying to the series are hidden in their row', () => {
         1,
       );
   expect(opacity(flying)).toBe(0);
-  expect(opacity(staying)).toBe(0.25);
+  expect(opacity(staying)).toBe(MISSING_OPACITY);
 });
 
 test('Pulling past the end of the list checks the catalog', async () => {
