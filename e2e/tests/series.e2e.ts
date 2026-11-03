@@ -26,6 +26,27 @@ test('figures can be ticked off by hand', async ({device, screen}) => {
   await expect(screen.getByTestId(`tile-${SERIES_25[3]}`)).not.toBeChecked();
 });
 
+test('the collection is kept when the app starts again', async ({
+  app,
+  device,
+  screen,
+}) => {
+  await scan(device, BOX.fitness);
+  await screen.getByTestId('reveal-card').tap();
+  await screen.getByTestId(`tile-${SERIES_25[3]}`).tap();
+  await expect(screen.getByTestId(`tile-${SERIES_25[3]}`)).toBeChecked();
+
+  await app.restart();
+  // The same box again, so the card can open its series.
+  await scan(device, BOX.fitness);
+  await screen.getByTestId('reveal-card').tap();
+  await expect(screen.getByTestId(`tile-${SERIES_25[1]}`)).toBeChecked();
+  await expect(screen.getByTestId(`tile-${SERIES_25[3]}`)).toBeChecked();
+  await expect(
+    screen.getByText('2 of 12 found · tap to tick off'),
+  ).toBeVisible();
+});
+
 test('the series sheet closes again', async ({device, screen}) => {
   await scan(device, BOX.fitness);
   await screen.getByTestId('reveal-card').tap();

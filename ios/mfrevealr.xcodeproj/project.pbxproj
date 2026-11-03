@@ -12,6 +12,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		30ADFD8E4060978CE44C0EA7 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E32A9ED4914949A46A1E33A8 /* InfoPlist.strings */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		78546C9EAF5906F6483A6943 /* RCTCloudKeyValues.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4185EBD9B1071B166CA3667 /* RCTCloudKeyValues.mm */; };
 		761780EF2CA45674006654EF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EE2CA45674006654EF /* SceneDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8A338CF8E9E9DF715DFE99BC /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 6376098F666E822CD87DEAED /* Settings.bundle */; };
@@ -32,6 +33,8 @@
 		6376098F666E822CD87DEAED /* Settings.bundle */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "wrapper.plug-in"; name = Settings.bundle; path = mfrevealr/Settings.bundle; sourceTree = "<group>"; };
 		6C3A3C508B236FA69428CE8A /* pt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = pt; path = mfrevealr/pt.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = mfrevealr/AppDelegate.swift; sourceTree = "<group>"; };
+		F4185EBD9B1071B166CA3667 /* RCTCloudKeyValues.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = RCTCloudKeyValues.mm; path = mfrevealr/RCTCloudKeyValues.mm; sourceTree = "<group>"; };
+		91E0247944FCBEC988A56DE9 /* mfrevealr.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = mfrevealr.entitlements; path = mfrevealr/mfrevealr.entitlements; sourceTree = "<group>"; };
 		761780EE2CA45674006654EF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = mfrevealr/SceneDelegate.swift; sourceTree = "<group>"; };
 		7A83C8A62B192D7EDE304CBB /* de */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = de; path = mfrevealr/de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = mfrevealr/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -58,6 +61,8 @@
 			children = (
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
+				F4185EBD9B1071B166CA3667 /* RCTCloudKeyValues.mm */,
+				91E0247944FCBEC988A56DE9 /* mfrevealr.entitlements */,
 				761780EE2CA45674006654EF /* SceneDelegate.swift */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
@@ -231,26 +236,6 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-mfrevealr/Pods-mfrevealr-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		FB042346B12FFC78921F696D /* Drop Local Networking (store builds) */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)",
-			);
-			name = "Drop Local Networking (store builds)";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/scripts/store-local-networking.sh\"\n";
-		};
 		6A5A88C9A351C5277AEDDEBB /* Register Test Link (E2E builds) */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -348,6 +333,26 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/scripts/strip-frameworks.sh\"\n";
 		};
+		FB042346B12FFC78921F696D /* Drop Local Networking (store builds) */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)",
+			);
+			name = "Drop Local Networking (store builds)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/scripts/store-local-networking.sh\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -357,6 +362,7 @@
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				761780EF2CA45674006654EF /* SceneDelegate.swift in Sources */,
+				78546C9EAF5906F6483A6943 /* RCTCloudKeyValues.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -394,6 +400,7 @@
 				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = K9VADMGRA7;
 				ENABLE_BITCODE = NO;
+				CODE_SIGN_ENTITLEMENTS = mfrevealr/mfrevealr.entitlements;
 				INFOPLIST_FILE = mfrevealr/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.shopping";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -428,6 +435,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = K9VADMGRA7;
+				CODE_SIGN_ENTITLEMENTS = mfrevealr/mfrevealr.entitlements;
 				INFOPLIST_FILE = mfrevealr/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.shopping";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;

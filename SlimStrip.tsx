@@ -43,7 +43,7 @@ export function SlimStrip({
 }: {
   scan?: Scan;
   setIds: string[];
-  found: Set<string>;
+  found: ReadonlySet<string>;
   heroes: HeroRegistry;
   inFlight: InFlight;
   onOpenSeries: (code: string) => void;

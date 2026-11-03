@@ -33,7 +33,7 @@ export function SplitChecklist({
   scan?: Scan;
   setName?: string;
   setIds: string[];
-  found: Set<string>;
+  found: ReadonlySet<string>;
   insets: Insets;
   onToggle: (code: string) => void;
 }) {

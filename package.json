@@ -67,5 +67,18 @@
   },
   "engines": {
     "node": ">= 22.11.0"
+  },
+  "codegenConfig": {
+    "name": "MfrevealrSpecs",
+    "type": "modules",
+    "jsSrcsDir": "specs",
+    "android": {
+      "javaPackageName": "dev.dudesoft.mfrevealr.specs"
+    },
+    "ios": {
+      "modulesProvider": {
+        "CloudKeyValues": "RCTCloudKeyValues"
+      }
+    }
   }
 }

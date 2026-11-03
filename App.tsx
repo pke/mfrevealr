@@ -64,6 +64,7 @@ import {
 import {Layout, Settings, useSettings} from './settings';
 import {classifyScan} from './scanOutcome';
 import {createSightings} from './sightings';
+import {getCollection, stagedCollection, useFound} from './collection';
 import {STORE_SCENE} from './storeScene';
 import {FakeCamera, type FakeCameraCode} from './fakeCamera';
 import {Lookup, LookupMessage} from './LookupMessage';
@@ -730,7 +731,7 @@ function Collection({
   visible: boolean;
   setName?: string;
   setIds: string[];
-  found: Set<string>;
+  found: ReadonlySet<string>;
   heroCode?: string;
   heroes: HeroRegistry;
   insets: Insets;
@@ -1447,12 +1448,21 @@ function Scanner({
     loadStoredCatalog().then(() => catalogUpdates.atStart());
     return () => catalogUpdates.dispose();
   }, [catalogUpdates]);
-  // Store screenshots start mid-collection; the app itself starts empty.
+  // Kept on the device and synced through iCloud. Store screenshots stage
+  // a collection in progress instead, in memory only. Test builds keep theirs
+  // off iCloud, whose store outlives the app: every test would start with
+  // the figures of the one before.
   const scene = STORE_SCENE;
-  const [figuresInSet, setFiguresInSet] = React.useState(
-    () => new Set<string>(scene?.found),
+  const [collection] = React.useState(() =>
+    scene
+      ? stagedCollection(scene.setId, scene.found)
+      : getCollection({synced: !FakeCamera}),
   );
-  const [currentSetId, setCurrentSetId] = React.useState(scene?.setId ?? '');
+  React.useEffect(() => collection.sync(), [collection]);
+  const [currentSetId, setCurrentSetId] = React.useState(() =>
+    collection.current(),
+  );
+  const figuresInSet = useFound(collection, currentSetId);
   const [lastScan, setLastScan] = React.useState<Scan | undefined>(
     scene && {code: scene.scan, isNew: true},
   );
@@ -1487,8 +1497,6 @@ function Scanner({
 
   // The scanner fires many times per second; refs let it compare against the
   // latest state without waiting for a re-render.
-  const figuresRef = React.useRef(figuresInSet);
-  figuresRef.current = figuresInSet;
   const currentSetIdRef = React.useRef(currentSetId);
   currentSetIdRef.current = currentSetId;
   const sightings = React.useRef(createSightings()).current;
@@ -1506,13 +1514,13 @@ function Scanner({
   const foundFullSet =
     setIds.length > 0 && setIds.every(id => figuresInSet.has(id));
 
-  const toggleFigure = React.useCallback((id: string) => {
-    setFiguresInSet(old => {
-      const next = new Set(old);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  }, []);
+  const toggleFigure = React.useCallback(
+    (id: string) => {
+      const setId = currentSetIdRef.current;
+      collection.mark(setId, [id], !collection.found(setId).has(id));
+    },
+    [collection],
+  );
 
   // `deliberate` scans (the test camera) are boxes held up on purpose, so
   // they count even when the same box was seen just before.
@@ -1533,8 +1541,8 @@ function Scanner({
       return;
     }
     setLookup(undefined);
-    // Every new box in view counts. A box from another series starts a new
-    // collection, but not while one of the current series is in view too.
+    // Every new box in view counts. A box from another series switches to
+    // that series, but not while one of the current series is in view too.
     const current = outcome.entries.filter(
       entry => entry.setId === currentSetIdRef.current,
     );
@@ -1543,30 +1551,25 @@ function Scanner({
       : outcome.entries.filter(
           entry => entry.setId === outcome.entries[0].setId,
         );
-    let shown: Scan | undefined;
-    let newlyFound = 0;
-    for (const {code, setId} of entries) {
-      let isNew = true;
-      if (setId !== currentSetIdRef.current) {
-        currentSetIdRef.current = setId;
-        figuresRef.current = new Set([code]);
-        setCurrentSetId(setId);
-      } else if (!figuresRef.current.has(code)) {
-        figuresRef.current = new Set(figuresRef.current).add(code);
-      } else {
-        isNew = false;
-      }
-      newlyFound += isNew ? 1 : 0;
-      // The card shows a new figure if there is one.
-      if (!shown || (isNew && !shown.isNew)) {
-        shown = {code, isNew};
-      }
+    const setId = entries[0].setId;
+    if (setId !== currentSetIdRef.current) {
+      currentSetIdRef.current = setId;
+      collection.setCurrent(setId);
+      setCurrentSetId(setId);
     }
-    if (newlyFound) {
-      setFiguresInSet(figuresRef.current);
-      foundNew(newlyFound);
+    const found = collection.found(setId);
+    const newlyFound = entries.filter(({code}) => !found.has(code));
+    // The card shows a new figure if there is one.
+    const shown = newlyFound[0] ?? entries[0];
+    if (newlyFound.length) {
+      collection.mark(
+        setId,
+        newlyFound.map(({code}) => code),
+        true,
+      );
+      foundNew(newlyFound.length);
     }
-    setLastScan(shown);
+    setLastScan({code: shown.code, isNew: newlyFound.length > 0});
   };
 
   const onScanRef = React.useRef(onScan);
@@ -1670,7 +1673,7 @@ function Scanner({
         text: t('reset.button'),
         style: 'destructive',
         onPress: () => {
-          setFiguresInSet(new Set());
+          collection.clear(currentSetIdRef.current);
           setLastScan(undefined);
           setLookup(undefined);
           sightings.clear();
@@ -1679,7 +1682,7 @@ function Scanner({
         },
       },
     ]);
-  }, [t, sightings]);
+  }, [t, sightings, collection]);
 
   const closeSeries = React.useCallback(() => setSeriesOpen(false), []);
   const closeSettings = React.useCallback(() => setSettingsOpen(false), []);
