@@ -89,6 +89,10 @@ const FRAME_S = 1 / 30;
 const FORESEE_S = 0.1;
 // A code read again this long after it was lost keeps its marker.
 const KEEP_MS = 2000;
+// The camera reports every code in view in every frame, and once with none
+// when the last one leaves. A code missing from its readings this long is
+// gone; a frame that misses it now and then is bridged.
+const LOST_MS = 100;
 
 const STILL: Velocity = {x: 0, y: 0};
 
@@ -103,6 +107,8 @@ type Tracked = {
   moving: boolean;
   shown: Marker;
   at: number;
+  // When the camera first read on without this code.
+  missedSince?: number;
 };
 
 const centerOf = (rect: Rect) => ({
@@ -215,14 +221,14 @@ function follow(before: Tracked, rect: Rect, at: number): Tracked {
 }
 
 /**
- * The figures to draw on their codes, locked onto them. The camera reports
- * codes only while it sees them, so each stays `holdMs` after its last
- * sighting, which also bridges frames where a code is missed; read again
- * soon after, it gets its marker back. Each box gets a marker of its own,
+ * The figures to draw on their codes, locked onto them. A marker goes soon
+ * after the camera reads on without its code. When no reading comes in at
+ * all, as while they are held up, it stays `holdMs` after its last one.
+ * Read again soon after, a code gets its marker back. Each box gets a marker of its own,
  * even boxes of the same figure. Listeners hear of
  * every reading. A marker unchanged keeps its object.
  */
-export function createMarkers(holdMs = 500) {
+export function createMarkers(holdMs = 1000) {
   // By marker id.
   const seen = new Map<string, Tracked>();
   const listeners = new Set<() => void>();
@@ -263,6 +269,11 @@ export function createMarkers(holdMs = 500) {
         taken.add(id);
         seen.set(id, after);
       });
+      for (const [id, tracked] of seen) {
+        if (!taken.has(id) && tracked.missedSince === undefined) {
+          seen.set(id, {...tracked, missedSince: now});
+        }
+      }
       listeners.forEach(listener => listener());
     },
     visible(now: number): Marker[] {
@@ -270,7 +281,13 @@ export function createMarkers(holdMs = 500) {
       for (const [id, tracked] of seen) {
         if (now - tracked.at > KEEP_MS) {
           seen.delete(id);
-        } else if (now - tracked.at <= holdMs) {
+        } else if (
+          now - tracked.at <= holdMs &&
+          !(
+            tracked.missedSince !== undefined &&
+            now - tracked.missedSince >= LOST_MS
+          )
+        ) {
           shown.push(tracked.shown);
         }
       }

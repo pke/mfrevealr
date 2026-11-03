@@ -133,7 +133,7 @@ export function CodeMarkers({
 }
 
 // Codes the camera lost are let go of this often.
-const PRUNE_MS = 200;
+const PRUNE_MS = 50;
 
 /**
  * The markers a tracker sees, drawn as its codes are read: only these

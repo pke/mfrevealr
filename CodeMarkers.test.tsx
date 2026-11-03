@@ -140,3 +140,28 @@ test('Live markers show what their tracker sees', () => {
   expect(markerIds(tree)).toEqual([]);
   act(() => tree.unmount());
 });
+
+test('Live markers go by themselves once their box is gone', () => {
+  jest.useFakeTimers();
+  const markers = createMarkers();
+  let tree!: renderer.ReactTestRenderer;
+  act(() => {
+    tree = renderer.create(
+      <LiveCodeMarkers markers={markers} found={new Set()} />,
+    );
+  });
+  act(() => {
+    markers.see(
+      [{code: '6472861', rect: {x: 0, y: 0, width: 40, height: 40}}],
+      Date.now(),
+    );
+    markers.see([], Date.now());
+  });
+  expect(markerIds(tree)).toEqual(['marker-6472861']);
+  act(() => {
+    jest.advanceTimersByTime(150);
+  });
+  expect(markerIds(tree)).toEqual([]);
+  act(() => tree.unmount());
+  jest.useRealTimers();
+});

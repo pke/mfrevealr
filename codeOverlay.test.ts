@@ -292,8 +292,8 @@ describe('Markers', () => {
     expect(markers.visible(2 * EVERY).map(m => m.rect.x)).toEqual([10, 300]);
   });
 
-  test('stay a moment after their code is lost, then go', () => {
-    const markers = createMarkers(500);
+  test('stay while the camera’s readings are held up, then go', () => {
+    const markers = createMarkers(1000);
     markers.see(
       [
         {code: 'A', rect},
@@ -301,10 +301,43 @@ describe('Markers', () => {
       ],
       0,
     );
-    markers.see([{code: 'B', rect}], 300);
-    expect(markers.visible(400).map(m => m.code)).toEqual(['A', 'B']);
-    expect(markers.visible(600).map(m => m.code)).toEqual(['B']);
-    expect(markers.visible(900)).toEqual([]);
+    // No reading at all comes in for a while: the boxes may still be there.
+    expect(markers.visible(700).map(m => m.code)).toEqual(['A', 'B']);
+    expect(markers.visible(1100)).toEqual([]);
+  });
+
+  // The camera reports every code in view in every frame, and once with none
+  // when the last one leaves it.
+  test('go right after the camera stops reading their code', () => {
+    const markers = createMarkers(1000);
+    markers.see(
+      [
+        {code: 'A', rect},
+        {code: 'B', rect: {...rect, x: 200}},
+      ],
+      0,
+    );
+    markers.see([{code: 'B', rect: {...rect, x: 200}}], EVERY);
+    expect(markers.visible(EVERY + 50).map(m => m.code)).toEqual(['A', 'B']);
+    expect(markers.visible(EVERY + 150).map(m => m.code)).toEqual(['B']);
+  });
+
+  test('go right after the camera sees no code at all', () => {
+    const markers = createMarkers(1000);
+    markers.see([{code: 'A', rect}], 0);
+    markers.see([], EVERY);
+    expect(markers.visible(EVERY + 150)).toEqual([]);
+  });
+
+  test('stay put through a frame that missed their code', () => {
+    const markers = createMarkers(1000);
+    markers.see([{code: 'A', rect}], 0);
+    const [first] = markers.visible(0);
+    markers.see([], EVERY);
+    markers.see([{code: 'A', rect}], 2 * EVERY);
+    const [again] = markers.visible(2 * EVERY + 150);
+    expect(again.id).toBe(first.id);
+    expect(again.rect).toBe(first.rect);
   });
 
   test('tell who listens when their codes are read', () => {

@@ -1,0 +1,40 @@
+diff --git a/node_modules/react-native-vision-camera/ios/Core/CameraSession+CodeScanner.swift b/node_modules/react-native-vision-camera/ios/Core/CameraSession+CodeScanner.swift
+index ae5b462..711aca0 100644
+--- a/node_modules/react-native-vision-camera/ios/Core/CameraSession+CodeScanner.swift
++++ b/node_modules/react-native-vision-camera/ios/Core/CameraSession+CodeScanner.swift
+@@ -15,10 +15,6 @@ extension CameraSession: AVCaptureMetadataOutputObjectsDelegate {
+       // No delegate callback
+       return
+     }
+-    guard !metadataObjects.isEmpty else {
+-      // No codes detected
+-      return
+-    }
+     guard let device = videoDeviceInput?.device else {
+       // No cameraId set
+       return
+diff --git a/node_modules/react-native-vision-camera/ios/React/CameraView.swift b/node_modules/react-native-vision-camera/ios/React/CameraView.swift
+index c773975..f7307e0 100644
+--- a/node_modules/react-native-vision-camera/ios/React/CameraView.swift
++++ b/node_modules/react-native-vision-camera/ios/React/CameraView.swift
+@@ -381,10 +381,16 @@ public final class CameraView: UIView, CameraSessionDelegate, PreviewViewDelegat
+   }
+ 
+   func onCodeScanned(codes: [CameraSession.Code], scannerFrame: CameraSession.CodeScannerFrame) {
+-    onCodeScannedEvent?([
+-      "codes": codes.map { $0.toJSValue() },
+-      "frame": scannerFrame.toJSValue(),
+-    ])
++    let codes = codes.map { $0.toJSValue() }
++    let frame = scannerFrame.toJSValue()
++    // Sent from the scanner's queue, an event waits until the main run loop
++    // wakes for something else, at times for half a second.
++    DispatchQueue.main.async {
++      self.onCodeScannedEvent?([
++        "codes": codes,
++        "frame": frame,
++      ])
++    }
+   }
+ 
+   func onAverageFpsChanged(averageFps: Double) {
