@@ -1233,7 +1233,10 @@ function Collection({
         <ScrollView
           ref={scrollRef}
           onLayout={measureChrome('viewport')}
-          contentContainerStyle={{paddingBottom: insets.bottom}}
+          contentContainerStyle={[
+            sheetStyles.content,
+            {paddingBottom: insets.bottom},
+          ]}
           bounces={false}
           scrollEventThrottle={16}
           onScroll={event => {

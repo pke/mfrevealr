@@ -161,7 +161,10 @@ export function Sheet({
           onScroll={event => {
             scrollY.current = event.nativeEvent.contentOffset.y;
           }}
-          contentContainerStyle={{paddingBottom: insets.bottom + 16}}>
+          contentContainerStyle={[
+            sheetStyles.content,
+            {paddingBottom: insets.bottom + 16},
+          ]}>
           <View
             style={[sheetStyles.grabber, {backgroundColor: palette.secondary}]}
           />
@@ -203,6 +206,10 @@ export const sheetStyles = StyleSheet.create({
     bottom: 0,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+  },
+  // On the scrolling content, not the sheet: the scroll bar keeps to the
+  // sheet's edge.
+  content: {
     paddingHorizontal: 16,
   },
   grabber: {
