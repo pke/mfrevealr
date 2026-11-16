@@ -1,3 +1,30 @@
+diff --git a/node_modules/react-native-vision-camera/android/src/main/java/com/mrousavy/camera/core/CodeScannerPipeline.kt b/node_modules/react-native-vision-camera/android/src/main/java/com/mrousavy/camera/core/CodeScannerPipeline.kt
+index 23d78d1..8e0188f 100644
+--- a/node_modules/react-native-vision-camera/android/src/main/java/com/mrousavy/camera/core/CodeScannerPipeline.kt
++++ b/node_modules/react-native-vision-camera/android/src/main/java/com/mrousavy/camera/core/CodeScannerPipeline.kt
+@@ -27,6 +27,8 @@ class CodeScannerPipeline(val configuration: CameraConfiguration.CodeScanner, va
+     scanner = BarcodeScanning.getClient(barcodeScannerOptions)
+   }
+ 
++  private var sawCodes = false
++
+   @OptIn(ExperimentalGetImage::class)
+   override fun analyze(imageProxy: ImageProxy) {
+     val image = imageProxy.image ?: throw InvalidImageTypeError()
+@@ -35,9 +37,12 @@ class CodeScannerPipeline(val configuration: CameraConfiguration.CodeScanner, va
+       val inputImage = InputImage.fromMediaImage(image, imageProxy.imageInfo.rotationDegrees)
+       scanner.process(inputImage)
+         .addOnSuccessListener { barcodes ->
+-          if (barcodes.isNotEmpty()) {
++          // Like iOS: every frame with codes, and one without once they're
++          // gone, so a code that left the view is known to be gone.
++          if (barcodes.isNotEmpty() || sawCodes) {
+             callback.onCodeScanned(barcodes, CodeScannerFrame(inputImage.width, inputImage.height))
+           }
++          sawCodes = barcodes.isNotEmpty()
+         }
+         .addOnFailureListener { error ->
+           Log.e(TAG, "Failed to process Image!", error)
 diff --git a/node_modules/react-native-vision-camera/ios/Core/CameraSession+CodeScanner.swift b/node_modules/react-native-vision-camera/ios/Core/CameraSession+CodeScanner.swift
 index ae5b462..711aca0 100644
 --- a/node_modules/react-native-vision-camera/ios/Core/CameraSession+CodeScanner.swift
