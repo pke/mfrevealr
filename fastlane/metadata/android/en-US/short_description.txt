@@ -1,0 +1,1 @@
+Scan a minifigure box and see which figure is inside before you open it

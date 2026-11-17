@@ -89,6 +89,27 @@ Submit the uploaded build for review with the release notes from fastlane/metada
 
 ----
 
+
+## Android
+
+### android upload_listing
+
+```sh
+[bundle exec] fastlane android upload_listing
+```
+
+Upload the Play Store texts, screenshots and feature graphic
+
+### android release
+
+```sh
+[bundle exec] fastlane android release
+```
+
+Build the release bundle and upload it to production as a draft, with What's new
+
+----
+
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
 
 More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).

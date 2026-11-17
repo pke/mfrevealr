@@ -41,8 +41,10 @@ yarn ios                         # or: yarn android
 | Lint | `yarn lint` |
 | End-to-end tests (simulated camera) | `yarn e2e:build:ios`, then `yarn e2e --target ios` |
 | App Store screenshots, all languages | `yarn screenshots` |
+| Google Play screenshots, all languages | `yarn screenshots:android` |
 | Publish a new figure catalog | `yarn catalog:release` |
 | TestFlight / App Store | `fastlane ios beta` / `fastlane ios release` |
+| Google Play listing / release (draft) | `fastlane android upload_listing` / `fastlane android release` |
 
 Debug builds install next to the release app as **Mini Figure Revealr Dev**
 (`dev.dudesoft.mfrevealr.dev`).

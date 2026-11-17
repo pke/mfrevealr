@@ -23,7 +23,7 @@ BUILD_PATH = File.expand_path("../build", FastlaneCore::FastlaneFolder.path)
 # have release notes only (the app speaks more languages than its listing)
 # stay out of uploads until their texts are written. The rest goes along:
 # copyright, categories and the App Review information.
-NOT_A_LANGUAGE = ["review_information"]
+NOT_A_LANGUAGE = ["review_information", "android"]
 
 def with_complete_metadata
   require "tmpdir"
@@ -200,5 +200,43 @@ platform :ios do
         },
       )
     end
+  end
+end
+
+# Google Play. Credentials: a service account JSON key with access to the app
+# in Play Console, at PLAY_JSON_KEY_FILE in fastlane/.env. Texts, screenshots
+# (yarn screenshots --android) and the feature graphic are in
+# fastlane/metadata/android, by Play language.
+PLAY_PACKAGE = "dev.dudesoft.mfrevealr.app"
+PLAY_METADATA = File.join(METADATA_PATH, "android")
+
+platform :android do
+  desc "Upload the Play Store texts, screenshots and feature graphic"
+  lane :upload_listing do
+    upload_to_play_store(
+      package_name: PLAY_PACKAGE,
+      json_key: ENV["PLAY_JSON_KEY_FILE"],
+      metadata_path: PLAY_METADATA,
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_changelogs: true,
+    )
+  end
+
+  desc "Build the release bundle and upload it to production as a draft, with What's new"
+  lane :release do
+    gradle(task: "bundle", build_type: "Release", project_dir: "android")
+    upload_to_play_store(
+      package_name: PLAY_PACKAGE,
+      json_key: ENV["PLAY_JSON_KEY_FILE"],
+      metadata_path: PLAY_METADATA,
+      track: "production",
+      # Sent for review from Play Console once checked there.
+      release_status: "draft",
+      aab: lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
   end
 end
