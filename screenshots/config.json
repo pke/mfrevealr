@@ -278,6 +278,44 @@
           "所有系列集中一处",
           "通过 iCloud 同步"
         ]
+      },
+      "headlineAndroid": {
+        "en-US": [
+          "Every series",
+          "in one place"
+        ],
+        "de-DE": [
+          "Alle Serien",
+          "an einem Ort"
+        ],
+        "es-ES": [
+          "Todas tus series",
+          "en un solo lugar"
+        ],
+        "fr-FR": [
+          "Toutes vos séries",
+          "au même endroit"
+        ],
+        "it": [
+          "Tutte le serie",
+          "in un unico posto"
+        ],
+        "pl": [
+          "Wszystkie serie",
+          "w jednym miejscu"
+        ],
+        "pt-BR": [
+          "Todas as séries",
+          "num só lugar"
+        ],
+        "ru": [
+          "Все серии",
+          "в одном месте"
+        ],
+        "zh-Hans": [
+          "所有系列",
+          "集中一处"
+        ]
       }
     },
     {

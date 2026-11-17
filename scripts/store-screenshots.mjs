@@ -10,12 +10,16 @@
 //
 //   yarn screenshots                 # all of the above
 //   yarn screenshots --skip-build    # reuse the last screenshot build
+//   yarn screenshots --android       # the same for Google Play
 //
-// Then `fastlane ios upload_screenshots` replaces the ones in App Store Connect.
-// Needs Xcode and ImageMagick (brew install imagemagick).
+// Then `fastlane ios upload_screenshots` replaces the ones in App Store Connect,
+// and `fastlane android upload_listing` the ones on Google Play. Needs Xcode,
+// or the Android SDK with the mfrevealr-e2e emulator, and ImageMagick (brew
+// install imagemagick).
 
-import {execFileSync} from 'node:child_process';
+import {execFileSync, spawn} from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -34,6 +38,7 @@ const config = JSON.parse(
 );
 const {screen, frame} = config;
 const skipBuild = process.argv.includes('--skip-build');
+const android = process.argv.includes('--android');
 
 // Output is captured (simctl chats on stderr); a failure still reports it.
 const run = (command, args, options = {}) =>
@@ -193,14 +198,15 @@ function launchLanguage(locale) {
   };
 }
 
-/** The largest size up to 104 at which every line fits the width. */
-function headlineSize(lines, font) {
-  const maxWidth = screen.width - 2 * 80;
+/** The largest size up to `largest` at which every line fits the width. */
+function headlineSize(lines, font, width = screen.width, largest = 104) {
+  const maxWidth = width - 2 * Math.round((80 * width) / screen.width);
   const widths = lines.map(line =>
-    Number(magick('-font', font, '-pointsize', '104', `label:${line}`,
+    Number(magick('-font', font, '-pointsize', largest, `label:${line}`,
       '-format', '%w', 'info:')),
   );
-  return Math.min(104, Math.floor((104 * maxWidth) / Math.max(...widths)));
+  return Math.min(largest,
+    Math.floor((largest * maxWidth) / Math.max(...widths)));
 }
 
 /** Device frame and headline on the splash yellow, at the screenshot's size. */
@@ -271,28 +277,212 @@ async function capture(udid, bundleId) {
   }
 }
 
+// Google Play takes no screenshot more than twice as long as it is wide, so
+// the phone stands on a 9:16 canvas there, in an Android frame.
+const PLAY = {width: 1080, height: 1920};
+const PLAY_OUT = path.join(ROOT, 'fastlane/metadata/android');
+const PLAY_LOCALES = {it: 'it-IT', pl: 'pl-PL', ru: 'ru-RU', 'zh-Hans': 'zh-CN'};
+const AVD = 'mfrevealr-e2e';
+const PACKAGE = 'dev.dudesoft.mfrevealr.app';
+const SDK =
+  process.env.ANDROID_HOME ?? path.join(os.homedir(), 'Library/Android/sdk');
+const ADB = path.join(SDK, 'platform-tools/adb');
+
+/** Which scene the next Android build stages; none for iOS builds. */
+function writeScene(name = null) {
+  fs.writeFileSync(path.join(GENERATED, 'scene.json'), JSON.stringify({name}));
+}
+
+/** The screenshot app staging `scene`: a release build with the debug key. */
+function buildAndroid(scene) {
+  writeScene(scene.name);
+  fs.mkdirSync(BUILD, {recursive: true});
+  const log = path.join(BUILD, 'gradle.log');
+  console.log(`Building ${scene.name} (log: ${path.relative(ROOT, log)})`);
+  const apks = path.join(ROOT, 'android/app/build/outputs/apk/e2e');
+  fs.rmSync(apks, {recursive: true, force: true});
+  try {
+    // Gradle would take the bundle of the scene before as up to date.
+    run('./gradlew', ['app:createBundleE2eJsAndAssets', '--rerun', 'app:assembleE2e'], {
+      cwd: path.join(ROOT, 'android'),
+      stdio: ['ignore', fs.openSync(log, 'w'), fs.openSync(log, 'a')],
+      env: {...process.env, STORE_SCREENSHOTS: '1'},
+    });
+  } catch (error) {
+    console.error(fs.readFileSync(log, 'utf8').split('\n').slice(-30).join('\n'));
+    throw error;
+  }
+  const apk = fs.readdirSync(apks).find(name => name.endsWith('.apk'));
+  return path.join(apks, apk);
+}
+
+/** The project's emulator, started without a window unless it runs already. */
+async function bootEmulator() {
+  for (const line of run(ADB, ['devices']).split('\n')) {
+    const id = line.split('\t')[0];
+    if (!id.startsWith('emulator-')) {
+      continue;
+    }
+    try {
+      if (run(ADB, ['-s', id, 'emu', 'avd', 'name']).split('\n')[0].trim() === AVD) {
+        return {id, started: false};
+      }
+    } catch {
+      // Not answering; not ours.
+    }
+  }
+  const port = 5600;
+  spawn(path.join(SDK, 'emulator/emulator'), ['-avd', AVD, '-port', String(port),
+    '-no-window', '-no-audio', '-no-boot-anim', '-no-snapshot-save'],
+  {detached: true, stdio: 'ignore'}).unref();
+  const id = `emulator-${port}`;
+  run(ADB, ['-s', id, 'wait-for-device']);
+  while (run(ADB, ['-s', id, 'shell', 'getprop', 'sys.boot_completed']).trim() !== '1') {
+    await sleep(2000);
+  }
+  console.log(`Emulator: ${AVD}`);
+  return {id, started: true};
+}
+
+/** Phone frame and headline on the splash yellow, on Google Play's canvas. */
+function composeAndroid(shot, lines, font, out) {
+  const {width, height} = PLAY;
+  const [shotWidth, shotHeight] = magick('identify', '-format', '%w %h', shot)
+    .split(' ').map(Number);
+  const largest = Math.round((104 * width) / screen.width);
+  const size = headlineSize(lines, font.file, width, largest);
+  const lineHeight = Math.round(largest * 1.23);
+  const top = Math.round((190 * width) / screen.width);
+  const phoneTop = top + lines.length * lineHeight + 40;
+  const bezel = 18;
+  const screenHeight = height - phoneTop - 2 * bezel - 30;
+  const screenWidth = Math.round((screenHeight * shotWidth) / shotHeight);
+  const radius = 40;
+  const hole = 11;
+  const tmp = path.join(BUILD, 'frame.png');
+  magick(
+    shot, '-resize', `${screenWidth}x${screenHeight}!`,
+    '(', '-size', `${screenWidth}x${screenHeight}`, 'xc:black', '-fill', 'white',
+    '-draw', `roundrectangle 0,0,${screenWidth - 1},${screenHeight - 1},${radius},${radius}`, ')',
+    '-alpha', 'off', '-compose', 'copy_opacity', '-composite',
+    // The front camera's punch hole, as on a Pixel.
+    '-compose', 'over', '-fill', 'black',
+    '-draw', `circle ${screenWidth / 2},${hole + 12} ${screenWidth / 2 + hole},${hole + 12}`,
+    '(', '-size', `${screenWidth + 2 * bezel}x${screenHeight + 2 * bezel}`, 'xc:none',
+    '-fill', '#0b0b0b', '-draw',
+    `roundrectangle 0,0,${screenWidth + 2 * bezel - 1},${screenHeight + 2 * bezel - 1},${radius + bezel},${radius + bezel}`,
+    ')', '+swap', '-geometry', `+${bezel}+${bezel}`, '-composite', tmp,
+  );
+  const args = ['-size', `${width}x${height}`, `xc:${frame.background}`];
+  let y = top;
+  for (const line of lines) {
+    args.push('-font', font.file, '-pointsize', size, '-fill', frame.headline,
+      '-stroke', font.stroke ? frame.headline : 'none',
+      '-strokewidth', font.stroke ?? 0,
+      '-gravity', 'north', '-annotate', `+0+${y}`, line);
+    y += lineHeight;
+  }
+  magick(args, tmp, '-gravity', 'north', '-geometry', `+0+${phoneTop}`,
+    '-composite', '-alpha', 'off', out);
+  fs.rmSync(tmp);
+}
+
+async function captureAndroid() {
+  const {id, started} = await bootEmulator();
+  const adb = (...args) => run(ADB, ['-s', id, ...args]);
+  const night = adb('shell', 'cmd', 'uimode', 'night').trim().split(' ').pop();
+  const demo = (command, ...extras) => adb('shell', 'am', 'broadcast', '-a',
+    'com.android.systemui.demo', '-e', 'command', command, ...extras);
+  const raw = path.join(BUILD, 'raw-android');
+  try {
+    adb('shell', 'settings', 'put', 'global', 'sysui_demo_allowed', '1');
+    demo('enter');
+    demo('clock', '-e', 'hhmm', '0941');
+    demo('battery', '-e', 'level', '100', '-e', 'plugged', 'false');
+    demo('network', '-e', 'wifi', 'show', '-e', 'level', '4');
+    demo('network', '-e', 'mobile', 'show', '-e', 'datatype', 'none', '-e', 'level', '4');
+    demo('notifications', '-e', 'visible', 'false');
+    for (const locale of config.locales) {
+      fresh(path.join(PLAY_OUT, PLAY_LOCALES[locale] ?? locale, 'images/phoneScreenshots'));
+      fs.mkdirSync(path.join(raw, locale), {recursive: true});
+    }
+    for (const [index, scene] of config.scenes.entries()) {
+      adb('install', '-r', buildAndroid(scene));
+      adb('shell', 'pm', 'grant', PACKAGE, 'android.permission.CAMERA');
+      adb('shell', 'cmd', 'uimode', 'night', scene.appearance === 'dark' ? 'yes' : 'no');
+      for (const locale of config.locales) {
+        const play = PLAY_LOCALES[locale] ?? locale;
+        adb('shell', 'cmd', 'locale', 'set-app-locales', PACKAGE, '--locales', play);
+        adb('shell', 'am', 'force-stop', PACKAGE);
+        adb('shell', 'am', 'start', '-W', '-n', `${PACKAGE}/dev.dudesoft.mfrevealr.MainActivity`);
+        // Images decode, and a sheet opens one second in and then animates.
+        await sleep(scene.open ? 7000 : 5000);
+        const shot = path.join(raw, locale, `${scene.name}.png`);
+        fs.writeFileSync(shot, execFileSync(ADB, ['-s', id, 'exec-out', 'screencap', '-p'],
+          // A full-screen PNG is several megabytes.
+          {maxBuffer: 64 * 1024 * 1024}));
+        const font = frame.fonts?.[locale] ?? {file: frame.font};
+        const name = `${String(index + 1).padStart(2, '0')}_${scene.name}.png`;
+        // Android has no iCloud; a scene can say so in headlineAndroid.
+        const headline = (scene.headlineAndroid ?? scene.headline)[locale];
+        composeAndroid(shot, headline, font,
+          path.join(PLAY_OUT, play, 'images/phoneScreenshots', name));
+        console.log(`  ${play}/${name}`);
+      }
+    }
+  } finally {
+    writeScene();
+    try {
+      demo('exit');
+      adb('shell', 'cmd', 'uimode', 'night', night);
+      adb('shell', 'cmd', 'locale', 'set-app-locales', PACKAGE, '--locales', '');
+    } catch {
+      // Gone already.
+    }
+    if (started) {
+      adb('emu', 'kill');
+    }
+  }
+  for (const locale of config.locales) {
+    const dir = path.join(PLAY_OUT, PLAY_LOCALES[locale] ?? locale, 'images/phoneScreenshots');
+    const sheet = path.join(BUILD, `overview-android-${locale}.png`);
+    magick(path.join(dir, '*.png'), '-resize', 'x1000', '-background', 'white',
+      '-splice', '16x0', '+append', sheet);
+    console.log(`Overview: ${path.relative(ROOT, sheet)}`);
+  }
+}
+
 pixelateFigures();
 makeBackgrounds();
-if (!skipBuild) {
-  build();
+writeScene();
+if (android) {
+  await captureAndroid();
+} else {
+  await captureIos();
 }
-const bundleId = run('plutil',
-  ['-extract', 'CFBundleIdentifier', 'raw', path.join(APP, 'Info.plist')]).trim();
-const udid = createSimulator();
-try {
-  simctl('boot', udid);
-  simctl('bootstatus', udid, '-b');
-  simctl('status_bar', udid, 'override', '--time', '9:41',
-    '--batteryState', 'charged', '--batteryLevel', '100',
-    '--cellularBars', '4', '--wifiBars', '3', '--operatorName', '');
-  simctl('install', udid, APP);
-  simctl('privacy', udid, 'grant', 'camera', bundleId);
-  await capture(udid, bundleId);
-} finally {
-  try {
-    simctl('shutdown', udid);
-  } catch {
-    // It may not have booted.
+
+async function captureIos() {
+  if (!skipBuild) {
+    build();
   }
-  simctl('delete', udid);
+  const bundleId = run('plutil',
+    ['-extract', 'CFBundleIdentifier', 'raw', path.join(APP, 'Info.plist')]).trim();
+  const udid = createSimulator();
+  try {
+    simctl('boot', udid);
+    simctl('bootstatus', udid, '-b');
+    simctl('status_bar', udid, 'override', '--time', '9:41',
+      '--batteryState', 'charged', '--batteryLevel', '100',
+      '--cellularBars', '4', '--wifiBars', '3', '--operatorName', '');
+    simctl('install', udid, APP);
+    simctl('privacy', udid, 'grant', 'camera', bundleId);
+    await capture(udid, bundleId);
+  } finally {
+    try {
+      simctl('shutdown', udid);
+    } catch {
+      // It may not have booted.
+    }
+    simctl('delete', udid);
+  }
 }

@@ -1,15 +1,20 @@
-import {ImageSourcePropType, Settings} from 'react-native';
+import {ImageSourcePropType, Platform, Settings} from 'react-native';
 import type {StoreScene} from '../storeScene';
 import config from './config.json';
 
-// Stands in for storeScene.ts in screenshot builds. The scene is picked with
-// the launch argument `-scene <name>`, which iOS hands to NSUserDefaults.
-// Backgrounds and pixelated figures are made by scripts/store-screenshots.mjs.
+// Stands in for storeScene.ts in screenshot builds. On iOS the scene is picked
+// with the launch argument `-scene <name>`, which iOS hands to NSUserDefaults;
+// Android has nothing like it, so each scene gets a build of its own, named in
+// generated/scene.json. Backgrounds, pixelated figures and that file are made
+// by scripts/store-screenshots.mjs.
 
 const backgrounds = require.context('./generated/backgrounds', false, /\.jpg$/);
 const figures = require.context('./generated/figures', false, /\d{7}\.png$/);
 
-const name = Settings.get('scene');
+const name =
+  Platform.OS === 'ios'
+    ? Settings.get('scene')
+    : require('./generated/scene.json').name;
 const scene = config.scenes.find(entry => entry.name === name);
 
 export const STORE_SCENE: StoreScene | undefined = scene && {
