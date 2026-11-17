@@ -7,9 +7,13 @@ import config from '../screenshots/config.json';
 // (screenshots/config.json) and texts (fastlane/metadata) for each of them.
 
 const METADATA = path.join(__dirname, '../fastlane/metadata');
+// Folders of store texts, apart from the App Review information that
+// fastlane keeps beside them (as NOT_A_LANGUAGE in the Fastfile).
+const NOT_A_LANGUAGE = ['review_information'];
 const storeLocales = fs
   .readdirSync(METADATA)
   .filter(name => fs.statSync(path.join(METADATA, name)).isDirectory())
+  .filter(name => !NOT_A_LANGUAGE.includes(name))
   .sort();
 
 // Apple's limits, in characters.
